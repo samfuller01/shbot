@@ -148,7 +148,8 @@ class Game():
                 await self.message_seat(author, "you arent the president.")
                 return
             if len(args) == 2 and args[1].isdigit():
-                if args[1] not in self.presidents or args[1] == author:
+                thing = int(args[1])
+                if thing not in self.presidents or thing == author:
                     await self.message_seat(author, "invalid use of power, try again")
                     return
                 invee = self.players_by_seat[args[1]]
@@ -161,10 +162,11 @@ class Game():
                 await self.message_seat(author, "you arent the president.")
                 return
             if len(args) == 2 and args[1].isdigit():
-                if args[1] not in self.presidents or args[1] == author:
+                thing = int(args[1])
+                if thing not in self.presidents or thing == author:
                     await self.message_seat(author, "invalid use of power, try again")
                     return
-                SEdplayer = self.players_by_seat[args[1]]
+                SEdplayer = self.players_by_seat[thing]
                 await self.main_channel.send(self.players_by_seat[author]["player"] + " chooses to special elect " + SEdplayer["player"])
                 await self.message_seat(author, "You have SE'd " + SEdplayer["player"] + ".")
                 self.presidents = [SEdplayer] + self.presidents
@@ -188,10 +190,11 @@ class Game():
                 await self.message_seat(author, "you arent the president.")
                 return
             if len(args) == 2 and args[1].isdigit():
-                if args[1] not in self.presidents or args[1] == author:
+                thing = int(args[1])
+                if thing not in self.presidents or thing == author:
                     await self.message_seat(author, "invalid use of power, try again")
                     return
-                killed_player = self.players_by_seat[args[1]]
+                killed_player = self.players_by_seat[thing]
                 await self.main_channel.send(self.players_by_seat[author]["player"] + " chooses to execute " + killed_player["player"])
                 # TODO remove chat perms
                 if killed_player["role"] == "H":
