@@ -17,7 +17,7 @@ Set up your `config.json` file by following `config.json.example`. **DO NOT COMM
 
 ```sh
 $ cd shbot
-$ python3 run.py
+$ python3 main.py
 ```
 
 # Contributing
