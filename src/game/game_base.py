@@ -1,6 +1,6 @@
-from board import SHBoard
-from definitions import *
-from components.create_component import CreateComponent
+from src.definitions import *
+from src.game.board import SHBoard
+from src.game.deck import SHDeck
 
 import random
 import discord
@@ -67,7 +67,6 @@ class SHGame (object):
 						_ch      = await category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds)))
             self.privateChannels.append(ch)
     #
-        config = preset if preset else DEFAULT_PRESETS[self.size]
         #
         #   The SHBoard holds the configuration and state
         #   of the board. It has an matrix of the component
@@ -76,6 +75,7 @@ class SHGame (object):
         #   The SHDeck holds the initial and current state of
         #   the deck. The configuration can control policy counts.
         #
+        config = preset if preset else DEFAULT_PRESETS[self.size]
         self.board = SHBoard(config)
         self.deck  = SHDeck(config)
     #
@@ -86,6 +86,7 @@ class SHGame (object):
         #
         self.activeComponents = {
             "premise":      None, # invariant
+            "tracker":      None, # invariant
             "nomination":   None, # variant
             "voting":       None, # variant
             "passed-gov":   None, # variant
