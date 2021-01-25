@@ -13,7 +13,8 @@ $ python3 -m pip install discord PIL
 
 # Usage
 
-Set up your `config.json` file by following `config.json.example`. **DO NOT COMMIT THIS FILE!**
+Set up your `config.json` file by following `config.json.example`. 
+**DO NOT COMMIT THIS FILE!**
 
 ```sh
 $ cd shbot

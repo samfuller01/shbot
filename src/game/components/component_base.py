@@ -14,7 +14,7 @@ class SHGameComponent (object):
         self.stage = None
         self.parent = parent
         self.client = client
-        # Anything else is component-specific.
+        # ...
 
     #
     # Runs once when the SHGame reaches this component's part of the flow.
