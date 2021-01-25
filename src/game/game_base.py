@@ -23,7 +23,7 @@ class SHGame (object):
     #   a dict or JSON that contains the
     #   configuration for this game
     #
-    def __init__(self, playerIDs, client=None, category=None, preset=None):
+    def __init__(self, players, client=None, category=None, preset=None):
     #
         #
         #   The SHGame uses the client and category
@@ -32,12 +32,40 @@ class SHGame (object):
         #
         self.client   = client
         self.category = category
+		#
+				#
+				#		The base permissions used by channels in this game.
+				#
+				self.basePermissions = {
+					self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False),
+					self.client.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+				}
+    #
+        #
+        #   The bot interfaces to the users in these channels.
+				#		The board is read-only, and only players can chat in the game chat.
+        #
+				_gameChatPermissions = self.basePermissions.copy()
+				for player in players:
+					_gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )
+				self.gameChatChannel = await category.create_text_channel("game-chat", _gameChatPermissions))
+				self.boardImgChannel = await category.create_text_channel("board-state", self.basePermissions)
     #
         #
         #   The list of players simply maps players to seats.
+				#		The private channels are only accessible for the given player.
         #
-        self.size    = len(playerIDs)
-        self.players = random.shuffle(playerIDs)
+        self.size    = len(players)
+        self.players = random.shuffle(players)
+        for i in range(0, self.size):
+            _n       = i + 1
+						_pvtperm = self.basePermissions.copy()
+						_pvtadds = {
+							self.category.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+							players[i]: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+						}
+						_ch      = await category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds)))
+            self.privateChannels.append(ch)
     #
         config = preset if preset else DEFAULT_PRESETS[self.size]
         #
@@ -69,8 +97,12 @@ class SHGame (object):
         #
         #   The current component. The actual objects active at any 
         #   given point in time are in the array, but fetched using the string.
+				#		nextComponent and shouldProgress signal to the flow when to 
+				#		initialize the next component.
         #
-        self.currentComponent = "premise"
+        self.currentRef = "premise"
+				self.nextComponent = None
+				self.shouldProgress = False
     #
         #
         #   The seats in the game, which contain the info and are
@@ -81,7 +113,6 @@ class SHGame (object):
         #   archetype, since the bot is limited to a two-team game.
         #
         self.seats = []
-
 
 
     #
