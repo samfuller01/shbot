@@ -1,6 +1,5 @@
 import json
 import random
-from enum import Enum
 
 #
 # Controls the deck for a Game. Contains full knowledge about both the deck
@@ -31,7 +30,8 @@ class SHDeck (object):
             # Still need to decide what the config is, can change if necessary.
             # If there's no data about a custom deck, build a standard one.
             #
-            _standard_deck = "deck" not in _preset or _preset["deck"] == None or len(_preset["deck"] == 0)
+            _standard_deck = _preset == None or "deck" not in _preset or _preset["deck"] == None
+                                or len(_preset["deck"] == 0)
             if _standard_deck:
                 self.deck = []
                 # unused variable "i" :pepeLaugh:
