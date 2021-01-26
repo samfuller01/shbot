@@ -14,7 +14,7 @@ class SHGameComponent (object):
     # client : DiscordClient
     #   a ref to the bot client
     #
-    def __init__(self, parent, client):
+    async def __init__(self, parent, client):
         self.stage = None
         self.parent = parent
         self.client = client
@@ -23,7 +23,7 @@ class SHGameComponent (object):
     #
     # Runs once when the SHGame reaches this component's part of the flow.
     #
-    def Setup(self):
+    async def Setup(self):
         pass
 
     #
@@ -35,6 +35,6 @@ class SHGameComponent (object):
     #   (bundle, type), where bundle is the data from the client
     #                   and type is its type as a string
     #
-    def Handle(self, context):
+    async def Handle(self, context):
         pass
 

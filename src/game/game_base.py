@@ -4,7 +4,7 @@ from src.game.deck import SHDeck
 
 import random
 import discord
-from threading import Lock
+from threading import RLock
 
 #
 #   Game controller.
@@ -37,7 +37,7 @@ class SHGame (object):
         #
         #   Thread/race safety!
         #
-        self.mutex = Lock()
+        self.mutex = RLock()
 		#
 		#
 		#	The base permissions used by channels in this game.
@@ -108,9 +108,10 @@ class SHGame (object):
 		#	nextComponent and policyPlayed signal to the flow when to 
 		#	initialize the next component.
         #
-        self.currentRef = "premise"
-        self.nextComponent = None
+        self.currRef = "premise"
+        self.prevRef = None
         self.policyWasPlayed = False
+        self.shouldProgress = False
         #
         #
         #   The seats in the game, which contain the info and are
@@ -134,8 +135,6 @@ class SHGame (object):
         #
         await self.activeComponents["premise"].Setup()
 
-
-
     #
     #   Handles input by passing it straight into the active
     #   component.
@@ -152,8 +151,17 @@ class SHGame (object):
         self.mutex.acquire(blocking=True)
 
         await self.activeComponents[currentRef].Handle(event)
+
         if (self.policyWasPlayed):
-            self.board.updateComponents()
+            await self.board.UpdateComponents()
+            await self.activeComponents[currRef].Setup()
+            self.policyWasPlayed = False
+            self.shouldProgress = False
+
+        if (self.shouldProgress):
+            await self.activeComponents[prevRef].Teardown()
+            await self.activeComponents[currRef].Setup()
+            self.shouldProgress = False
 
         self.mutex.release()
 
