@@ -1,9 +1,10 @@
-from src.definitions import *
+from definitions import *
 from src.game.board import SHBoard
 from src.game.deck import SHDeck
 
 import random
 import discord
+from threading import Lock
 
 #
 #   Game controller.
@@ -23,8 +24,8 @@ class SHGame (object):
     #   a dict or JSON that contains the
     #   configuration for this game
     #
-    def __init__(self, players, client=None, category=None, preset=None):
-    #
+    async def __init__(self, players=None, client=None, category=None, preset=None):
+        #
         #
         #   The SHGame uses the client and category
         #   to handle channel creation and management,
@@ -32,41 +33,47 @@ class SHGame (object):
         #
         self.client   = client
         self.category = category
+        #
+        #
+        #   Thread/race safety!
+        #
+        self.mutex = Lock()
 		#
-				#
-				#		The base permissions used by channels in this game.
-				#
-				self.basePermissions = {
-					self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False),
-					self.client.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-				}
-    #
+		#
+		#	The base permissions used by channels in this game.
+		#
+        self.basePermissions = {
+			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False),
+			self.client.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+		}
+        #
         #
         #   The bot interfaces to the users in these channels.
-				#		The board is read-only, and only players can chat in the game chat.
+		#	The board is read-only, and only players can chat in the game chat.
         #
-				_gameChatPermissions = self.basePermissions.copy()
-				for player in players:
-					_gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )
-				self.gameChatChannel = await category.create_text_channel("game-chat", _gameChatPermissions))
-				self.boardImgChannel = await category.create_text_channel("board-state", self.basePermissions)
-    #
+        _gameChatPermissions = self.basePermissions.copy()
+        for player in players:
+            _gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )
+        self.gameChatChannel = await self.category.create_text_channel("game-chat", _gameChatPermissions)
+        self.boardImgChannel = await self.category.create_text_channel("board-state", self.basePermissions)
+        #
         #
         #   The list of players simply maps players to seats.
-				#		The private channels are only accessible for the given player.
+		#	The private channels are only accessible for the given player.
         #
         self.size    = len(players)
         self.players = random.shuffle(players)
+        self.privateChannels = []
         for i in range(0, self.size):
             _n       = i + 1
-						_pvtperm = self.basePermissions.copy()
-						_pvtadds = {
-							self.category.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-							players[i]: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-						}
-						_ch      = await category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds)))
-            self.privateChannels.append(ch)
-    #
+            _pvtperm = self.basePermissions.copy()
+            _pvtadds = {
+				self.category.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+				players[i]: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+			}
+            _ch      = await self.category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds))
+            self.privateChannels.append(_ch)
+        #
         #
         #   The SHBoard holds the configuration and state
         #   of the board. It has an matrix of the component
@@ -75,10 +82,10 @@ class SHGame (object):
         #   The SHDeck holds the initial and current state of
         #   the deck. The configuration can control policy counts.
         #
-        config = preset if preset else DEFAULT_PRESETS[self.size]
-        self.board = SHBoard(config)
-        self.deck  = SHDeck(config)
-    #
+        _config    = preset if preset else DEFAULT_PRESETS[self.size]
+        self.board = SHBoard(config=_config, parent=this, client=self.client, size=self.size)
+        self.deck  = SHDeck(_config)
+        #
         #
         #   The array of SHGameComponents that are currently active,
         #   i.e. being used in the flow. They are retrieved from the
@@ -98,13 +105,13 @@ class SHGame (object):
         #
         #   The current component. The actual objects active at any 
         #   given point in time are in the array, but fetched using the string.
-				#		nextComponent and shouldProgress signal to the flow when to 
-				#		initialize the next component.
+		#	nextComponent and policyPlayed signal to the flow when to 
+		#	initialize the next component.
         #
         self.currentRef = "premise"
-				self.nextComponent = None
-				self.shouldProgress = False
-    #
+        self.nextComponent = None
+        self.policyWasPlayed = False
+        #
         #
         #   The seats in the game, which contain the info and are
         #   mapped against self.players. This information is set
@@ -121,8 +128,11 @@ class SHGame (object):
     #   Also initializes the seats according to the premise
     #   component. Sets the flow to 'nomination'.
     #
-    def Setup(self):
-        pass
+    async def Setup(self):
+        #
+        #   Run setup, which deals roles and proceeds to gov 1.
+        #
+        await self.activeComponents["premise"].Setup()
 
 
 
@@ -134,16 +144,29 @@ class SHGame (object):
     #       (bundle, type), where bundle is the data form the client
     #       and type is its type as a string
     #
-    def Handle(self, event):
-        pass
+    async def Handle(self, event):
+        #
+        #   Lock to force procedural inputs and pass all input
+        #   to the active component.
+        #
+        self.mutex.acquire(blocking=True)
 
+        await self.activeComponents[currentRef].Handle(event)
+        if (self.policyWasPlayed):
+            self.board.updateComponents()
 
+        self.mutex.release()
 
     #
     #   Cleans up the game and deletes the category and channels.
     #
-    def Teardown(self):
-        pass
+    async def Teardown(self):
+
+        await self.gameChatChannel.delete()
+        await self.boardImgChannel.delete()
+
+        for ch in self.privateChannels:
+            await ch.delete()
 
     # ...
     # anything else is a helper method!

@@ -1,3 +1,7 @@
+from src.game.components import *
+
+import discord
+
 #
 #   Interface for game overlay objects.
 #
