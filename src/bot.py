@@ -67,14 +67,14 @@ class SHBot (object):
     #
     #
     #
-    async def on_ready():
+    async def on_ready(self):
         msg.send(tag="info", location=__file__, channel=None, msg_type="plain", delete_after=None,
                  content="Connected as ${self.client.username}#${self.client.discriminator}!")
 
     #
     #
     #
-    async def on_message(message):
+    async def on_message(self, message):
         #
         #   Is this message intended to be read by us?
         #
@@ -162,7 +162,7 @@ class SHBot (object):
     #
     #
     #
-    async def on_raw_reaction_add(payload):
+    async def on_raw_reaction_add(self, payload):
         _guild    = await self.client.fetch_guild(payload.guild_id)
         _channel  = await _guild.get_channel(payload.channel_id)
         _message  = await _channel.fetch_message(payload.message_id)
@@ -175,7 +175,7 @@ class SHBot (object):
     #
     #
     #
-    async def on_raw_reaction_remove(payload):
+    async def on_raw_reaction_remove(self, payload):
         _guild    = await self.client.fetch_guild(payload.guild_id)
         _channel  = await _guild.get_channel(payload.channel_id)
         _message  = await _channel.fetch_message(payload.message_id)
