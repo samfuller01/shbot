@@ -150,8 +150,7 @@ class SHGame (object):
         self.currRef = "premise"
         self.prevRef = None
         self.policyWasPlayed = False
-        self.shouldProgress = False
-        
+        self.shouldProgress = False 
 
 
     #
@@ -198,13 +197,13 @@ class SHGame (object):
     #
     #   Cleans up the game and deletes the category and channels.
     #
-    async def Teardown(self):
+    def Teardown(self):
 
-        await self.gameChatChannel.delete()
-        await self.boardImgChannel.delete()
+        self.gameChatChannel.delete()
+        self.boardImgChannel.delete()
 
         for ch in self.privateChannels:
-            await ch.delete()
+            ch.delete()
 
     # ...
     # anything else is a helper method!

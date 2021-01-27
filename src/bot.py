@@ -8,13 +8,14 @@ import src.utils.message as msg
 #
 class SHBot (object):
 
-    def __init__(self, token = None, prefix = None):
+    def __init__(self, configjson=None):
         #
         #   The discord bot client.
         #
         self.client = discord.Client()
-        self.token  = token;
-        self.prefix = prefix;
+        self.token  = configjson["token"];
+        self.prefix = configjson["prefix"];
+        self.config = configjson;
         #
         #   Games are essentially a function that
         #   reside in a category. We determine the
@@ -30,13 +31,34 @@ class SHBot (object):
     #   TODO: load permissions schema and server configs from DB
     #
     def Setup(self):
+       self.on_ready = self.client.event(self.on_ready)
+       self.on_message = self.client.event(self.on_message)
+       self.on_raw_reaction_add = self.client.event(self.on_raw_reaction_add)
+       self.on_raw_reaction_remove = self.client.event(self.on_raw_reaction_remove)
+
+    #
+    #   Let's fucking GO
+    #
+    def Start(self):
+        self.client.run(self.token)
+
+    #
+    #   Saves configuration to DB.
+    #
+    #   TODO: implement!
+    #
+    def Save(self):
         pass
 
     #
-    #   We're ready to log in.
+    #   Saves configuration to DB, elegant final teardown hooks go here as well.
     #
-    async def Start(self):
-        await self.client.login(token, bot=True)
+    def Shutdown(self):
+        #
+        self.Save()
+        #
+        for (category, activeGame) in self.activeGames:
+            activeGame.Teardown()
 
     #####
     #   Event handlers.
@@ -45,7 +67,6 @@ class SHBot (object):
     #
     #
     #
-    @self.client.event
     async def on_ready():
         msg.send(tag="info", location=__file__, channel=None, msg_type="plain", delete_after=None,
                  content="Connected as ${self.client.username}#${self.client.discriminator}!")
@@ -53,7 +74,6 @@ class SHBot (object):
     #
     #
     #
-    @self.client.event
     async def on_message(message):
         #
         #   Is this message intended to be read by us?
@@ -142,7 +162,6 @@ class SHBot (object):
     #
     #
     #
-    @self.client.event
     async def on_raw_reaction_add(payload):
         _guild    = await self.client.fetch_guild(payload.guild_id)
         _channel  = await _guild.get_channel(payload.channel_id)
@@ -156,7 +175,6 @@ class SHBot (object):
     #
     #
     #
-    @self.client.event
     async def on_raw_reaction_remove(payload):
         _guild    = await self.client.fetch_guild(payload.guild_id)
         _channel  = await _guild.get_channel(payload.channel_id)
