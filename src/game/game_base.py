@@ -62,7 +62,10 @@ class SHGame (object):
 		#	The private channels are only accessible for the given player.
         #
         self.size    = len(players)
-        self.players = random.shuffle(players)
+        random.shuffle(players)
+        #self.players_by_seat = {}
+
+        self.players = players
         self.privateChannels = []
         for i in range(0, self.size):
             _n       = i + 1
@@ -73,6 +76,42 @@ class SHGame (object):
 			}
             _ch      = await self.category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds))
             self.privateChannels.append(_ch)
+        
+        #
+        #
+        #   The seats in the game, which contain the info and are
+        #   mapped against self.players. This information is set
+        #   during the premise SHGameComponent, since the roles
+        #   are dependent on the variant. However, each role
+        #   invariably boils down to either the Liberal or Fascist
+        #   archetype, since the bot is limited to a two-team game.
+        #
+        #   Stores data about each player in a game.
+        #   Format:
+        #   {
+        #       seat_number : {
+        #           data_1: ___
+        #           data_2: ___  
+        #       }, 
+        #       next_seat_number : {
+        #           ...
+        #       }
+        #       ...
+        #   }
+        #
+        self.seats = {}
+        for i in range(0, self.size):
+            _n      = i + 1
+            data    = {
+                "player_reference": players[i],
+                "name": "**" + players[i].name + " {" + str(i+1) + "}**",
+                "role": None,
+                "prev_president": False,
+                "prev_chancellor": False,
+                "alive": True,
+                "has_voted": False
+            }
+            self.seats[_n] = data
         #
         #
         #   The SHBoard holds the configuration and state
@@ -112,16 +151,7 @@ class SHGame (object):
         self.prevRef = None
         self.policyWasPlayed = False
         self.shouldProgress = False
-        #
-        #
-        #   The seats in the game, which contain the info and are
-        #   mapped against self.players. This information is set
-        #   during the premise SHGameComponent, since the roles
-        #   are dependent on the variant. However, each role
-        #   invariably boils down to either the Liberal or Fascist
-        #   archetype, since the bot is limited to a two-team game.
-        #
-        self.seats = []
+        
 
 
     #
