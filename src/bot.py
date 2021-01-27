@@ -1,7 +1,7 @@
 import discord
 import re
 
-import src.game.utils
+import src.utils.message as msg
 
 #
 #   Wrapper for the bot.
@@ -27,6 +27,8 @@ class SHBot (object):
     #   Set up the event handlers, route all non-global
     #   events into the games via the (bundle, "type") structure.
     #
+    #   TODO: load permissions schema and server configs from DB
+    #
     def Setup(self):
         pass
 
@@ -45,7 +47,8 @@ class SHBot (object):
     #
     @self.client.event
     async def on_ready():
-        utils.log("info", "Connected as ${self.client.username}#${self.client.discriminator}!")
+        msg.send(tag="info", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                 content="Connected as ${self.client.username}#${self.client.discriminator}!")
 
     #
     #
@@ -62,12 +65,14 @@ class SHBot (object):
         #   What's this message?
         #
         _content = message.content[len(self.prefix):]
-        _m_array = _content.split(' ')
+        _m_array = _content.split()
         command  = _m_array[0]
         args     = _m_array[1:]
 
         #
         #   Is this a special or global command?
+        #
+        #   TODO: permissions structure for global commands!
         #
         if command == 'creategame':
 
@@ -75,16 +80,16 @@ class SHBot (object):
             #   If not a server, return.
             #
             if (message.guild == None):
-                utils.log("error", __file__, "Can't make a game in a DM channel!")
-                utils.msg("error", message.channel, "You can only create games on servers!")
+                msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
+                         content="You can only create games on servers!")
                 return
 
             #
             #   If author is already in a game, return.
             #
             if message.author.id in self.activePlayers:
-                utils.log("error", __file__, "${message.author.id} is already in a game!")
-                utils.msg("error", message.channel, "<@${message.author.id}>, you are already in a game!")
+                msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
+                          content="<@${message.author.id}>, you are already in a game!")
                 return
 
             #
@@ -92,11 +97,16 @@ class SHBot (object):
             #   then return and alert.
             #
             _playerargs  = list(map(lambda x: re.sub(r'<@([0-9]+)>', r'\1', x), args[1:]))
-            _playerobjs  = list(map(lambda x: await self.client.get_user(x), _playerargs))
+            _playerobjs  = []
+            for p in _playerargs:
+                _player = await self.client.get_user(p)
+                _playerobjs.append(_player)
+
             if None in _playerobjs:
-                utils.log("error", __file__, "Invalid player passed to createGame.")
-                utils.msg("error", message.channel, "Invalid player passed to `${self.prefix} creategame`!")
+                msg.send("error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
+                         content="Invalid player passed to `${self.prefix} creategame`!")
                 return
+
             for player in _playerobjs:
                 self.activePlayers.update( {player.id: True} )
 
@@ -105,7 +115,7 @@ class SHBot (object):
             #   Make a category and create a game in it.
             #
             _newcategory = await message.guild.create_category("Secret Hitler")
-            _pseudoUUID  = str(_newcategory.id)[:7]
+            _pseudoUUID  = str(_newcategory.id)[:8]
             await _newcategory.edit(name="Secret Hitler ${_pseudoUUID}")
             _desiredmode = args[0]
             _newgame     = await SHGame(players=_playerobjs, client=self.client, category=_newcategory, _preset=_desiredmode)
@@ -117,6 +127,7 @@ class SHBot (object):
             #   This command is only for management roles.
             #   Otherwise, a game should autodelete after completion (after 1 min).
             #
+            #   TODO: implement this later. for now, just automatically delete after X minutes
             pass
 
         #
