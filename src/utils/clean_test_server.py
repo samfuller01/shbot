@@ -10,7 +10,7 @@ async def on_ready():
     channels = await guild.fetch_channels()
 
     for ch in channels:
-        if ch.category == None:
+        if ch.category == None and type(ch) != discord.CategoryChannel:
             await ch.delete()
 
     exit()

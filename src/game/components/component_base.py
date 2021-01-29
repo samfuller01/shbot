@@ -14,7 +14,7 @@ class SHGameComponent (object):
     # client : DiscordClient
     #   a ref to the bot client
     #
-    async def __init__(self, parent, client):
+    def __init__(self, parent, client):
         self.stage = None
         self.parent = parent
         self.client = client

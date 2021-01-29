@@ -1,9 +1,12 @@
 import os
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-ASSET_PATH   = "${PROJECT_ROOT}/assets"
-PRESET_PATH  = "${PROJECT_ROOT}/presets"
-SRC_PATH     = "${PROJECT_ROOT}/src"
+
+ASSET_PATH   = PROJECT_ROOT + "/assets"
+PRESET_PATH  = PROJECT_ROOT + "/presets"
+SRC_PATH     = PROJECT_ROOT + "/src"
+
+COMP_PATH    = SRC_PATH + "/game/components"
 
 DEFAULT_PRESETS = {
     5: "${PRESET_PATH}/classic/stock/5p.json",
