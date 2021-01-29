@@ -30,8 +30,7 @@ class SHDeck (object):
             # Still need to decide what the config is, can change if necessary.
             # If there's no data about a custom deck, build a standard one.
             #
-            _standard_deck = _preset == None or "deck" not in _preset or _preset["deck"] == None
-                                or len(_preset["deck"] == 0)
+            _standard_deck = _preset == None or "deck" not in _preset or _preset["deck"] == None or len(_preset["deck"] == 0)
             if _standard_deck:
                 self.deck = []
                 # unused variable "i" :pepeLaugh:
@@ -56,6 +55,3 @@ class SHDeck (object):
             self.deck.extend(self.discard)
             self.discard = []
         random.shuffle(self.deck)
-
-
-            

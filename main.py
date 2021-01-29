@@ -1,8 +1,10 @@
 import json
+import re
 import discord
+import asyncio
 
 from src.utils import message as msg
-from src.game.game_bas import SHGame
+from src.game.game_base import SHGame
 
 f = open('config.json')
 config = json.load(f)
@@ -14,16 +16,21 @@ activePlayers = {}
 serverConfs = {}
 
 #
-#   Load per-server configurations into memory.
-#
-async def Setup():
-    pass
-
-#
 #   A forget-and-fire function that saves all configs to memory.
 #
 async def Save():
-    pass
+    await msg.send(tag="debug", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                   content="Saved configuration state!")
+
+async def SaveTask():
+    await Save()
+    await asyncio.sleep(300)
+
+#
+#   Load per-server configurations into memory.
+#
+async def Setup():
+    client.loop.create_task(SaveTask())
 
 #
 #   Tears down everything
@@ -40,9 +47,7 @@ async def Shutdown():
 @client.event
 async def on_ready():
     await msg.send(tag="info", location=__file__, channel=None, msg_type="plain", delete_after=None,
-                   content="Connected as ${client.user.name}#${client.user.discriminator}!")
-
-
+                   content="Connected as {name}#{num}!".format(name=client.user.name, num=client.user.discriminator))
 
 @client.event
 async def on_message(message):
@@ -71,31 +76,47 @@ async def on_message(message):
         #   If not a server, return.
         #
         if (message.guild == None):
-            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
                      content="You can only create games on servers!")
+            return
+
+        #
+        #
+        #
+        if (len(args) == 0):
+            await msg.send(tag="info", location=__file__, channel=message.channel, msg_type="plain", delete_after=None,
+                           content="Usage: {pref} creategame 'preset' [@players]".format(pref=config["prefix"]))
             return
 
         #
         #   If author is already in a game, return.
         #
         if message.author.id in activePlayers:
-            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
-                      content="<@${message.author.id}>, you are already in a game!")
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                            content="<@{id}>, you are already in a game!".format(id=message.author.id))
             return
 
         #
         #   If any of the args following the preset are not a valid player,
         #   then return and alert.
         #
-        _playerargs  = list(map(lambda x: re.sub(r'<@([0-9]+)>', r'\1', x), args[1:]))
+        _playerargs  = list(map(lambda x: re.sub(r'<@!?([0-9]+)>', r'\1', x), args[1:]))
         _playerobjs  = []
         for p in _playerargs:
-            _player = await client.get_user(p)
-            _playerobjs.append(_player)
+            try:
+                _player = await message.channel.guild.fetch_member(p)
+                _playerobjs.append(_player)
+            except(discord.NotFound, discord.HTTPException):
+                 await msg.send("error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                                content="Invalid player '{player}' passed to `{pref} creategame`!".format(player=p, pref=config["prefix"]))
+                 _playerobjs.append(None)
 
         if None in _playerobjs:
-            await msg.send("error", location=__file__, channel=message.channel, msg_type="plain", delete_after=2,
-                     content="Invalid player passed to `${self.prefix} creategame`!")
+            return
+
+        if (len(_playerobjs) < 5 or len(_playerobjs) > 10):
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                           content="Your game must have between 5 and 10 players! No mode will support more or less players.")
             return
 
         for player in _playerobjs:
@@ -107,11 +128,15 @@ async def on_message(message):
         #
         _newcategory = await message.guild.create_category("Secret Hitler")
         _pseudoUUID  = str(_newcategory.id)[:8]
-        await _newcategory.edit(name="Secret Hitler ${_pseudoUUID}")
+        await _newcategory.edit(name="Secret Hitler {uuid}".format(uuid=_pseudoUUID))
         _desiredmode = args[0]
-        _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, _preset=_desiredmode)
+        _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode)
         activeGames.update( {_newcategory.id: _newgame} )
         await _newgame.Setup()
+
+        await msg.send(tag="success", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                       content="Game {uuid} created!".format(uuid=_pseudoUUID))
+
         return
 
     if command == 'deletegame':
@@ -120,7 +145,21 @@ async def on_message(message):
         #   Otherwise, a game should autodelete after completion (after 1 min).
         #
         #   TODO: implement this later. for now, just automatically delete after X minutes
-        pass
+
+        if (message.guild == None or message.channel.category.id not in activeGames):
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                           content="There is no game running here!")
+            return
+
+        if (message.author.id not in activePlayers):
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                           content="<@{mention}>, you are not in a game!".format(mention=message.author.id))
+            return
+
+        activeGame = activeGames.get(message.channel.category.id)
+        for (player in activeGame.players):
+            activePlayers.pop(player.id)
+        client.loop.create_task(activeGame.Teardown())
 
     #
     #   If not, just pass it along to the relevant
@@ -157,3 +196,9 @@ async def on_raw_reaction_remove(payload):
         activeGame = activeGames.get(_category)
         client.loop.create_task(activeGame.Handle(("reaction", payload, _message, "remove")))
 
+###################
+# MAIN
+###################
+
+client.loop.create_task(Setup())
+client.run(config["token"])

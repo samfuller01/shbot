@@ -6,10 +6,20 @@ import random
 import discord
 from threading import RLock
 
+class aobject (object):
+ 
+    async def __new__(cls, *a, **kw):
+        instance = super().__new__(cls)
+        await instance.__init__(*a, **kw)
+        return instance
+
+    async def __init__(self):
+        pass
+
 #
 #   Game controller.
 #
-class SHGame (object):
+class SHGame (aobject):
 
     #
     # client : DiscordClient
@@ -44,7 +54,7 @@ class SHGame (object):
 		#
         self.basePermissions = {
 			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False),
-			self.client.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+			self.category.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
 		}
         #
         #
@@ -54,8 +64,8 @@ class SHGame (object):
         _gameChatPermissions = self.basePermissions.copy()
         for player in players:
             _gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )
-        self.gameChatChannel = await self.category.create_text_channel("game-chat", _gameChatPermissions)
-        self.boardImgChannel = await self.category.create_text_channel("board-state", self.basePermissions)
+        self.gameChatChannel = await self.category.create_text_channel("game-chat", overwrites=_gameChatPermissions)
+        self.boardImgChannel = await self.category.create_text_channel("board-state", overwrites=self.basePermissions)
         #
         #
         #   The list of players simply maps players to seats.
@@ -74,8 +84,9 @@ class SHGame (object):
 				self.category.guild.default_role: discord.PermissionOverwrite(read_messages=False),
 				players[i]: discord.PermissionOverwrite(read_messages=True, send_messages=True)
 			}
-            _ch      = await self.category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds))
-            self.privateChannels.append(_ch) 
+            _pvtperm.update(_pvtadds)
+            _ch      = await self.category.create_text_channel("seat-{n}".format(n=_n), overwrites=_pvtperm)
+            self.privateChannels.append(_ch)
         #
         #
         #   The seats in the game, which contain the info and are
@@ -120,8 +131,8 @@ class SHGame (object):
         #   The SHDeck holds the initial and current state of
         #   the deck. The configuration can control policy counts.
         #
-        _config    = preset if preset else DEFAULT_PRESETS[self.size]
-        self.board = SHBoard(config=_config, parent=this, client=self.client, size=self.size)
+        _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}".format(root=PRESET_PATH, pre=preset)
+        self.board = SHBoard(preset=_config, parent=self, client=self.client, size=self.size)
         self.deck  = SHDeck(_config)
         #
         #
@@ -149,7 +160,7 @@ class SHGame (object):
         self.currRef = "premise"
         self.prevRef = None
         self.policyWasPlayed = False
-        self.shouldProgress = False 
+        self.shouldProgress = False
 
 
     #
@@ -197,15 +208,15 @@ class SHGame (object):
     #
     #   Cleans up the game and deletes the category and channels.
     #
-    async def Teardown(self):
+    def Teardown(self):
 
-        await self.gameChatChannel.delete()
-        await self.boardImgChannel.delete()
+        client.loop.create_task(self.gameChatChannel.delete())
+        client.loop.create_task(self.boardImgChannel.delete())
 
         for ch in self.privateChannels:
-            await ch.delete()
+            client.loop.create_task(ch.delete())
 
-        await self.category.delete()
+        client.loop.create_task(self.category.delete())
 
     # ...
     # anything else is a helper method!
