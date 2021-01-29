@@ -47,21 +47,21 @@ class SHBot (object):
     #
     #   TODO: implement!
     #
-    def Save(self):
+    async def Save(self):
         pass
 
     #
     #   Saves configuration to DB, elegant final teardown hooks go here as well.
     #
-    def Shutdown(self):
+    async def Shutdown(self):
         #
-        self.Save()
+        await self.Save()
         #
         for (category, activeGame) in self.activeGames:
-            activeGame.Teardown()
+           asyncio.create_task(activeGame.Teardown())
 
     #####
-    #   Event handlers.
+    #   Event handlers
     #####
 
     #

@@ -75,8 +75,7 @@ class SHGame (object):
 				players[i]: discord.PermissionOverwrite(read_messages=True, send_messages=True)
 			}
             _ch      = await self.category.create_text_channel("seat-${n}", _pvtperm.update(_pvtadds))
-            self.privateChannels.append(_ch)
-        
+            self.privateChannels.append(_ch) 
         #
         #
         #   The seats in the game, which contain the info and are
@@ -182,6 +181,7 @@ class SHGame (object):
         await self.activeComponents[currentRef].Handle(event)
 
         if (self.policyWasPlayed):
+            await self.activeComponents[prevRef].Teardown()
             await self.board.UpdateComponents()
             await self.activeComponents[currRef].Setup()
             self.policyWasPlayed = False
@@ -197,13 +197,15 @@ class SHGame (object):
     #
     #   Cleans up the game and deletes the category and channels.
     #
-    def Teardown(self):
+    async def Teardown(self):
 
-        self.gameChatChannel.delete()
-        self.boardImgChannel.delete()
+        await self.gameChatChannel.delete()
+        await self.boardImgChannel.delete()
 
         for ch in self.privateChannels:
-            ch.delete()
+            await ch.delete()
+
+        await self.category.delete()
 
     # ...
     # anything else is a helper method!

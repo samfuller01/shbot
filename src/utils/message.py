@@ -1,16 +1,20 @@
 import discord
 
-def send (
+async def send (
     tag="info", location=None, channel=None, msg_type="plain",
     delete_after=None, content=None
 ):
+    _response = None
+
     if (msg_type == "plain"):
         if (delete_after != None):
-            channel.send(content=content, delete_after=delete_after)
+            _response = await channel.send(content=content, delete_after=delete_after)
         else:
-            channel.send(content=content)
+            _response = await channel.send(content=content)
     elif (msg_type == "embed"):
         if (delete_after != None):
-            channel.send(embed=content, delete_after=delete_after)
+            _response = await channel.send(embed=content, delete_after=delete_after)
         else:
-            channel.send(embed=content)
+            _response = await channel.send(embed=content)
+ 
+    return _response
