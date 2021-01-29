@@ -1,6 +1,7 @@
 from definitions import *
 from src.game.board import SHBoard
 from src.game.deck import SHDeck
+from src.utils import message as msg
 
 import random
 import discord
@@ -43,6 +44,7 @@ class SHGame (aobject):
         #
         self.client   = client
         self.category = category
+        self.pseudoID = str(category.id)[:8]
         #
         #
         #   Thread/race safety!
@@ -210,13 +212,17 @@ class SHGame (aobject):
     #
     def Teardown(self):
 
-        client.loop.create_task(self.gameChatChannel.delete())
-        client.loop.create_task(self.boardImgChannel.delete())
+        self.client.loop.create_task(self.gameChatChannel.delete())
+        self.client.loop.create_task(self.boardImgChannel.delete())
 
         for ch in self.privateChannels:
-            client.loop.create_task(ch.delete())
+            self.client.loop.create_task(ch.delete())
 
-        client.loop.create_task(self.category.delete())
+        self.client.loop.create_task(self.category.delete())
+
+        self.client.loop.create_task(
+            msg.send(tag="warning", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                     content="Deleting game {uuid}!".format(self.pseudoID)))
 
     # ...
     # anything else is a helper method!

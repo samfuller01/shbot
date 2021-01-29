@@ -19,8 +19,6 @@ class SHBoard (object):
         #   Abandon hope ye all who enter here (reading the preset).
         #
         self.size = size
-        with json.loads(preset) as _preset:
-            pass
 
 
     #

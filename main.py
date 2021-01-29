@@ -157,9 +157,11 @@ async def on_message(message):
             return
 
         activeGame = activeGames.get(message.channel.category.id)
-        for (player in activeGame.players):
-            activePlayers.pop(player.id)
+        for player in activeGame.players:
+            if player.id in activePlayers:
+                activePlayers.pop(player.id)
         client.loop.create_task(activeGame.Teardown())
+        activeGames.pop(message.channel.category.id)
 
     #
     #   If not, just pass it along to the relevant

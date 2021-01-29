@@ -25,6 +25,7 @@ class SHDeck (object):
         #
         # I'm abandoning hope pogU
         #
+        return
         with json.loads(preset) as _preset:
             #
             # Still need to decide what the config is, can change if necessary.
