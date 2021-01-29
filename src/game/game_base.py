@@ -111,19 +111,17 @@ class SHGame (aobject):
         #       ...
         #   }
         #
-        self.seats = {}
+        self.s_seats = {}
         for i in range(0, self.size):
             _n      = i + 1
             data    = {
                 "player_reference": players[i],
                 "name": "**" + players[i].name + " {" + str(i+1) + "}**",
                 "role": None,
-                "prev_president": False,
-                "prev_chancellor": False,
                 "alive": True,
                 "has_voted": False
             }
-            self.seats[_n] = data
+            self.s_seats[_n] = data
         #
         #
         #   The SHBoard holds the configuration and state
@@ -191,18 +189,18 @@ class SHGame (aobject):
         #
         self.mutex.acquire(blocking=True)
 
-        await self.activeComponents[currentRef].Handle(event)
+        await self.activeComponents[self.currentRef].Handle(event)
 
         if (self.policyWasPlayed):
-            await self.activeComponents[prevRef].Teardown()
+            await self.activeComponents[self.prevRef].Teardown()
             await self.board.UpdateComponents()
-            await self.activeComponents[currRef].Setup()
+            await self.activeComponents[self.currRef].Setup()
             self.policyWasPlayed = False
             self.shouldProgress = False
 
         if (self.shouldProgress):
-            await self.activeComponents[prevRef].Teardown()
-            await self.activeComponents[currRef].Setup()
+            await self.activeComponents[self.prevRef].Teardown()
+            await self.activeComponents[self.currRef].Setup()
             self.shouldProgress = False
 
         self.mutex.release()
@@ -226,3 +224,13 @@ class SHGame (aobject):
 
     # ...
     # anything else is a helper method!
+
+    async def message_main (self, tag="info", location=None, msg_type="plain", delete_after=None, content=None):
+        msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
+
+    async def message_seat (self, s_seat_num, 
+        tag="info", location=None, msg_type="plain",
+        delete_after=None, content=None
+    ):
+        if 0 <= s_seat_num <= self.size:
+            msg.send(tag=tag, location=location, channel=self.privateChannels[s_seat_num - 1], msg_type=msg_type, delete_after=delete_after, content=content)
