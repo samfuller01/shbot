@@ -1,4 +1,4 @@
-from src.game.components import *
+from src.game.components.create_component import CreateComponentFromQualified
 
 import json
 
@@ -9,7 +9,7 @@ import json
 #
 class SHBoard (object):
 
-    def __init__(self, preset = None, parent = None, client = None, size = None):
+    def __init__(self, preset = None, parent = None, client = None, size = None, context = None):
         #
         #   For functionality, keeps a ref to the Game and Client.
         #
@@ -21,7 +21,16 @@ class SHBoard (object):
         #
         config = json.load(open(preset))
         #
+        #   Our starting components, to be instantiated into parent.activeComponents.
+        #
         self.starting_ruleset = config["startingComponents"]
+        #
+        #   An entry into board_config is a list of slots.
+        #   Index 0 corresponds to policy 1 on the board.
+        #   If a given component is None, it does not overwrite.
+        #   If you want a component to do nothing, explicitly
+        #   define the Empty component.
+        #
         self.board_configs = {
             "Liberal": config["boards"]["Liberal"],
             "Fascist": config["boards"]["Fascist"]
@@ -31,14 +40,18 @@ class SHBoard (object):
             "Fascist": len(self.board_configs["Fascist"])
         }
         #
-        #   An entry into board_config is a list of slots.
-        #   Index 0 corresponds to policy 1 on the board.
-        #   If a given component is None, it does not overwrite.
-        #   If you want a component to do nothing, explicitly
-        #   define the Empty component.
+        #   Load in the starting elements. 
         #
-
-
+        for key in self.starting_ruleset:
+            self.parent.activeComponents.update({ key:  CreateComponentFromQualified(self.parent, context, key, self.starting_ruleset[key]) })
+        #
+        #   Policy info.
+        #
+        self.policiesPlayed = {
+            "Liberal": 0,
+            "Fascist": 0
+        }
+        self.lastPolicy = None
 
     #
     #   Updates the active components in the SHGame parent to reflect the behaviour
@@ -51,4 +64,5 @@ class SHBoard (object):
     #   modifies : self.parent.activeComponents
     #
     def UpdateComponents(self):
-        pass
+        for key in self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]]:
+            self.activeComponents.update({ key, self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]][key] })
