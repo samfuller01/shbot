@@ -1,6 +1,7 @@
 import json
 import re
 import discord
+import discord.ext.commands as commands
 import asyncio
 
 from src.utils import message as msg
@@ -9,7 +10,7 @@ from src.game.game_base import SHGame
 f = open('config.json')
 config = json.load(f)
 
-client = discord.Client()
+client = commands.Bot(config["prefix"])
 
 activeGames = {}
 activePlayers = {}
@@ -38,7 +39,7 @@ async def Setup():
 async def Shutdown():
     await Save()
     for (cat, game) in activeGames:
-        client.loop.create_task(game.Teardown())
+        await game.Teardown()
 
 ###################
 # EVENTS
@@ -172,6 +173,7 @@ async def on_message(message):
         activeGame = activeGames.get(categoryID)
         client.loop.create_task(activeGame.Handle(("message", message, command, args)))
 
+    client.loop.create_task(client.process_commands(message))
 
 
 @client.event
@@ -197,6 +199,19 @@ async def on_raw_reaction_remove(payload):
     if _category in activeGames:
         activeGame = activeGames.get(_category)
         client.loop.create_task(activeGame.Handle(("reaction", payload, _message, "remove")))
+
+
+@client.command()
+async def shutdown(context):
+    if context.author.id not in config["admins"]:
+        await msg.send(tag="warning", location=__file__, channel=context.channel, msg_type="plain", delete_after=5,
+                   content="<@{}>, you can't shutdown the bot.".format(context.author.id))
+        return
+
+    await Shutdown()
+    await msg.send(tag="success", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                   content="Shutting down.")
+    await client.logout()
 
 ###################
 # MAIN

@@ -15,10 +15,29 @@ class SHBoard (object):
         #
         self.parent = parent
         self.client = client
-        #
+        self.size   = size
+        #   
         #   Abandon hope ye all who enter here (reading the preset).
         #
-        self.size = size
+        config = json.load(open(preset))
+        #
+        self.starting_ruleset = config["startingComponents"]
+        self.board_configs = {
+            "Liberal": config["boards"]["Liberal"],
+            "Fascist": config["boards"]["Fascist"]
+        }
+        self.board_lengths = {
+            "Liberal": len(self.board_configs["Liberal"]),
+            "Fascist": len(self.board_configs["Fascist"])
+        }
+        #
+        #   An entry into board_config is a list of slots.
+        #   Index 0 corresponds to policy 1 on the board.
+        #   If a given component is None, it does not overwrite.
+        #   If you want a component to do nothing, explicitly
+        #   define the Empty component.
+        #
+
 
 
     #

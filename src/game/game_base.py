@@ -131,7 +131,7 @@ class SHGame (aobject):
         #   The SHDeck holds the initial and current state of
         #   the deck. The configuration can control policy counts.
         #
-        _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}".format(root=PRESET_PATH, pre=preset)
+        _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}.json".format(root=PRESET_PATH, pre=preset)
         self.board = SHBoard(preset=_config, parent=self, client=self.client, size=self.size)
         self.deck  = SHDeck(_config)
         #
