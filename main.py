@@ -1,6 +1,7 @@
 import json
 import re
 import discord
+import discord.ext.commands as commands
 import asyncio
 
 from src.utils import message as msg
@@ -9,7 +10,7 @@ from src.game.game_base import SHGame
 f = open('config.json')
 config = json.load(f)
 
-client = discord.Client()
+client = commands.Bot(config["prefix"])
 
 activeGames = {}
 activePlayers = {}
@@ -38,7 +39,7 @@ async def Setup():
 async def Shutdown():
     await Save()
     for (cat, game) in activeGames:
-        client.loop.create_task(game.Teardown())
+        await game.Teardown()
 
 ###################
 # EVENTS
@@ -130,7 +131,7 @@ async def on_message(message):
         _pseudoUUID  = str(_newcategory.id)[:8]
         await _newcategory.edit(name="Secret Hitler {uuid}".format(uuid=_pseudoUUID))
         _desiredmode = args[0]
-        _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode)
+        _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
         activeGames.update( {_newcategory.id: _newgame} )
         await _newgame.Setup()
 
@@ -144,19 +145,26 @@ async def on_message(message):
         #   This command is only for management roles.
         #   Otherwise, a game should autodelete after completion (after 1 min).
         #
-        #   TODO: implement this later. for now, just automatically delete after X minutes
+        #   TODO: update this to run per-server.
 
         if (message.guild == None or message.channel.category.id not in activeGames):
             await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
                            content="There is no game running here!")
             return
 
-        if (message.author.id not in activePlayers):
+        if (message.author.id not in activePlayers and message.author.id not in config["admins"]):
             await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
                            content="<@{mention}>, you are not in a game!".format(mention=message.author.id))
             return
 
         activeGame = activeGames.get(message.channel.category.id)
+        playerids = list(map(lambda x: x.id, activeGame.players))
+
+        if (message.author.id not in playerids and message.author.id not in config["admins"]):
+            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                           content="<@{mention}>, you are not allowed to delete this game.".format(message.author.id))
+            return
+
         for player in activeGame.players:
             if player.id in activePlayers:
                 activePlayers.pop(player.id)
@@ -172,6 +180,7 @@ async def on_message(message):
         activeGame = activeGames.get(categoryID)
         client.loop.create_task(activeGame.Handle(("message", message, command, args)))
 
+    client.loop.create_task(client.process_commands(message))
 
 
 @client.event
@@ -197,6 +206,31 @@ async def on_raw_reaction_remove(payload):
     if _category in activeGames:
         activeGame = activeGames.get(_category)
         client.loop.create_task(activeGame.Handle(("reaction", payload, _message, "remove")))
+
+
+###################
+# COMMANDS
+###################
+
+@client.command()
+async def shutdown(context):
+    if context.author.id not in config["admins"]:
+        await msg.send(tag="warning", location=__file__, channel=context.channel, msg_type="plain", delete_after=5,
+                   content="<@{}>, you can't shutdown the bot.".format(context.author.id))
+        return
+
+    await Shutdown()
+    await msg.send(tag="success", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                   content="Shutting down.")
+    await client.logout()
+
+#@client.command()
+#async def help(context):
+#    pass
+
+@client.command()
+async def presets(context):
+    pass
 
 ###################
 # MAIN

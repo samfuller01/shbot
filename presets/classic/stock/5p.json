@@ -1,0 +1,54 @@
+{
+	"startingComponents": {
+		"premise"      : "default",
+		"tracker"      : "default",
+		"nomination"   : "default",
+		"voting"       : "default",
+		"passed_gov"   : "default",
+		"failed_gov"   : "default",
+		"legislative"  : "default",
+		"post_policy"  : "default",
+		"policy_power" : "empty"
+	},
+	"boards": {
+		"Liberal": [
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "empty"
+			}
+		],
+		"Fascist": [
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "empty"
+			},
+			{
+				"policy_power": "peek_three",
+				"passed_gov"  : "hitler_zone"
+			},
+			{
+				"policy_power": "execute",
+				"legislative" : "in_veto"
+			},
+			{
+				"policy_power": "execute"
+			},
+			{
+				"policy_power": "empty"
+			}
+		]
+	}
+}

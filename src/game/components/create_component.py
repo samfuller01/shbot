@@ -23,7 +23,7 @@ def CreateComponentFromQualified(parent = None, context = None, slot = None, nam
     #
     _module_name = "src.game.components.{s}.{n}".format(slot, name)
     _module      = importlib.import_module(_module_name)
-    _class       = getattr(_module, "SHGameComponent")
+    _class       = getattr(_module, "SHGameComponent{s}{p}".format(s=slot.upper(), p=name.upper())
 
     #
     #   Create an instance.
