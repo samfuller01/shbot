@@ -25,7 +25,7 @@ class SHDeck (object):
         #
         # I'm abandoning hope pogU
         #
-        return
+        
         with json.loads(preset) as _preset:
             #
             # Still need to decide what the config is, can change if necessary.
@@ -56,3 +56,29 @@ class SHDeck (object):
             self.deck.extend(self.discard)
             self.discard = []
         random.shuffle(self.deck)
+
+    #
+    # Removes n cards from the deck
+    # and returns them. 
+    #
+    def draw(self, n):
+        if n > len(self.deck):
+            print("something bad happened in deck")
+            return []
+        else:
+            _draw = self.deck[0:n]
+            self.deck = self.deck[n:]
+            return _draw
+    
+    #
+    # Helper methods :jerry:
+    #
+    def discard(self, policy):
+        self.discard.append(policy)
+
+    #
+    # Returns the emoji representation of a card whose value
+    # is given by num.
+    #
+    def repr_emoji(self, num):
+        return None # TODO

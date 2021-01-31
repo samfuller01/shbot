@@ -66,19 +66,19 @@ class SHGameComponentVotingDefault (SHGameComponent):
                     _votes[self.vote_value[i]].append(i)
                 else:
                     return
-        _message = "Jas: " + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[1])) +
-                        "\nNeins:" + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[0]))
+        _message = "Jas: " + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[1])) + "\nNeins:" + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[0]))
         
         _passed = len(_votes[1]) > len(_votes[0])
 
         if _passed:
-            _message = "The vote passed by a margin of " + str(len(_votes[1])) + " to " str(len(_votes[0])) + ".\n" + _message
+            _message = "The vote passed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
+            
             await self.parent.message_main(_message)
 
-            # TODO check for hitler win
+            # TODO check for hitler win, although this might get done in passed_gov
             # TODO call government_success()
         else:
-            _message = "The vote failed by a margin of " + str(len(_votes[1])) + " to " str(len(_votes[0])) + ".\n" + _message
+            _message = "The vote failed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
             await self.parent.message_main(_message)
             # TODO call government_fail()
             

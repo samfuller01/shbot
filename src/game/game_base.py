@@ -122,6 +122,16 @@ class SHGame (aobject):
                 "has_voted": False
             }
             self.s_seats[_n] = data
+
+        # 
+        # Stores any and all 'global' data for a game.
+        # Use in any component you like, free of charge.
+        # 
+        self.game_data = {
+            "s_president": 1,
+            "s_chancellor": None,
+            "s_government_history": []
+        }
         #
         #
         #   The SHBoard holds the configuration and state

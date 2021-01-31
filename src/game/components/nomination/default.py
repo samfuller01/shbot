@@ -12,7 +12,7 @@ class SHGameComponentNominationDefault (SHGameComponent):
         
         # TODO insert president's name
         parent.send_text(0, "President ___ to select a chancellor.")
-        self.private_message = parent.message_seat(channel=parent.s_president, content="Select a chancellor.")
+        self.private_message = parent.message_seat(channel=parent.game_data["s_president"], content="Select a chancellor.")
 
         # tries to emulate the "one click" feature present on sh.io, for instance
         # 7 buttons pop up each with a seat.
@@ -34,17 +34,12 @@ class SHGameComponentNominationDefault (SHGameComponent):
             for i in range(self.parent.size):
                 if _event.emoji == self.parent.request_emoji(i + 1):
                     if self.is_legal_pick(i + 1):
-                        await self.parent.message_seat(self.parent.s_president, "You selected ____") #TODO
-                        self.parent.s_chancellor = i + 1
+                        await self.parent.message_seat(self.parent.game_data["s_president"], "You selected ____") #TODO
+                        self.parent.game_data["s_chancellor"] = i + 1
                         # TODO announce nomination
-                        break
+                        # TODO move along to voting stage
             else:
-                await self.parent.message_seat(self.parent.s_president, "Illegal pick.")
-        
-        # do more things?
-
-                        
-
+                await self.parent.message_seat(self.parent.game_data["s_president"], "Illegal pick.")                
 
     ##
     # TODO: returns whether a chancellor pick is legal
