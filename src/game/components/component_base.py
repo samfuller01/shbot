@@ -1,6 +1,5 @@
 from src.game.components import *
-from src.game.game_base import aobject
-
+from src.utils.aobject import aobject
 import discord
 
 #
@@ -15,7 +14,7 @@ class SHGameComponent (aobject):
     # client : DiscordClient
     #   a ref to the bot client
     #
-    def __init__(self, parent, client):
+    def __init__(self, parent=None, client=None):
         self.parent = parent
         self.client = client
         # ...

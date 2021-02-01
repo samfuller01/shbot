@@ -37,27 +37,34 @@ def get_role_name(abbrev):
 class SHGameComponentPremiseDefault(SHGameComponent):
 
     async def __init__(self, parent, client):
-        super(parent, client)
+        super(SHGameComponentPremiseDefault, self).__init__(parent=parent, client=client)
         # ...
 
     async def Setup(self):
+        print("hello i got here")
         _roles = list(x for x in get_base_roles(self.parent.size))
         _num_fascists = sum([1 for x in _roles if x == "F"])
         random.shuffle(_roles)
+        await self.parent.message_main(content="test")
         for i in range(self.parent.size):
-            _n = i+1
-            self.seats[_n]["role"] = roles[i]
-            msg = "The game begins and you receive the " + get_role_name(roles[i]) + " role."
-            if roles[i] == "H":
-                msg += "\nThere are **" + str(_num_fascists) + " Fascists, they know who you are."
-            elif roles[i] == "F":
-                for j in range(parent.size):
-                    if roles[j] == "F" and j != i:
-                        msg += "\nYou see that " + self.parent.seats[j+1]["name"] + " is also a **Fascist.**"
-                for j in range(self.num_players):
-                    if roles[j] == "H" and j != i:
-                        msg += "\nYou see that " + self.parent.seats[j+1]["name"] + " is **Hitler.** They " + "do not know who you are."
-            #message this to the player 
+            s_n = i+1
+            self.parent.s_seats[s_n]["role"] = _roles[i]
+            msg = "The game begins and you receive the " + get_role_name(_roles[i]) + " role."
+            if _roles[i] == "H":
+                msg += "\nThere are" + str(_num_fascists) + " **Fascists,** they know who you are."
+            elif _roles[i] == "F":
+                for j in range(self.parent.size):
+                    if _roles[j] == "F" and j != i:
+                        msg += "\nYou see that " + self.parent.s_seats[j+1]["name"] + " is also a **Fascist.**"
+                for j in range(self.parent.size):
+                    if _roles[j] == "H" and j != i:
+                        msg += "\nYou see that " + self.parent.s_seats[j+1]["name"] + " is **Hitler.** They " + "do not know who you are."
+            await self.parent.message_seat(s_n, content=msg)
+        self.parent.UpdateToComponent("nomination", False)
+        await self.parent.Handle(None)
 
+    async def Handle(self, context):
+        pass
 
-
+    async def Teardown(self):
+        pass

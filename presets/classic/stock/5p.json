@@ -7,7 +7,7 @@
 		"passed_gov"   : "default",
 		"failed_gov"   : "default",
 		"legislative"  : "default",
-		"post_policy"  : "default",
+		"post_policy"  : "no_op",
 		"policy_power" : "empty"
 	},
 	"boards": {

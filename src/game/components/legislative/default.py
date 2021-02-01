@@ -4,11 +4,11 @@ from src.utils import message as msg
 class SHGameComponentLegislativeDefault (SHGameComponent):
 
     async def __init__(self, parent, client):
-        super( parent, client )
+        super(SHGameComponentLegislativeDefault, self).__init__(parent=parent, client=client)
         # ...
 
-    async def Setup(self, parent, client):
-        self.draw = parent.deck.draw(3)
+    async def Setup(self):
+        self.draw = self.parent.deck.draw(3)
         self.deal_to_president()
 
     async def Handle(self, context):

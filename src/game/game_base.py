@@ -2,20 +2,13 @@ from definitions import *
 from src.game.board import SHBoard
 from src.game.deck import SHDeck
 from src.utils import message as msg
+from src.utils.aobject import aobject
 
 import random
 import discord
 from threading import RLock
 
-class aobject (object):
 
-    async def __new__(cls, *a, **kw):
-        instance = super().__new__(cls)
-        await instance.__init__(*a, **kw)
-        return instance
-
-    async def __init__(self):
-        pass
 
 #
 #   Game controller.
@@ -55,7 +48,8 @@ class SHGame (aobject):
 		#	The base permissions used by channels in this game.
 		#
         self.basePermissions = {
-			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False),
+			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False, read_messages=False), 
+            # TODO flesh this out ^ (read messages = False, only added to prevent spam notifs for people who have them turned on)
 			self.category.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
 		}
         #
@@ -157,8 +151,8 @@ class SHGame (aobject):
         #   the deck. The configuration can control policy counts.
         #
         _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}.json".format(root=PRESET_PATH, pre=preset)
-        self.board = SHBoard(preset=_config, parent=self, client=self.client, size=self.size, context=context)
-        self.deck  = SHDeck(_config)
+        self.board = await SHBoard(preset=_config, parent=self, client=self.client, size=self.size, context=context)
+        self.deck  = SHDeck(preset=_config)
         #
         #   The current component. The actual objects active at any 
         #   given point in time are in the array, but fetched using the string.
@@ -197,7 +191,8 @@ class SHGame (aobject):
         #
         self.mutex.acquire(blocking=True)
 
-        await self.activeComponents[self.currRef].Handle(event)
+        if event != None: # TODO too hacky? this is for non-awaiting game components
+            await self.activeComponents[self.currRef].Handle(event)
 
         if (self.policyWasPlayed):
             await self.activeComponents[self.prevRef].Teardown()
@@ -250,3 +245,6 @@ class SHGame (aobject):
     ):
         if 0 <= s_seat_num <= self.size:
             await msg.send(tag=tag, location=location, channel=self.privateChannels[s_seat_num - 1], msg_type=msg_type, delete_after=delete_after, content=content)
+
+    async def request_emoji(self, name):
+        return 0

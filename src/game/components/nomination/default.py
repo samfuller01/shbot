@@ -4,15 +4,15 @@ from src.utils import message as msg
 class SHGameComponentNominationDefault (SHGameComponent):
 
     async def __init__(self, parent, client):
-        super( parent, client )
+        super(SHGameComponentNominationDefault, self).__init__(parent=parent, client=client)
         # ...
 
-    async def Setup(self, parent, client):
+    async def Setup(self):
         # whatever your private state is, set it to default
         
         # TODO insert president's name
-        parent.send_text(0, "President ___ to select a chancellor.")
-        self.private_message = parent.message_seat(channel=parent.game_data["s_president"], content="Select a chancellor.")
+        self.parent.message_main("President ___ to select a chancellor.")
+        self.private_message = self.parent.message_seat(self.parent.game_data["s_president"], content="Select a chancellor.")
 
         # tries to emulate the "one click" feature present on sh.io, for instance
         # 7 buttons pop up each with a seat.
@@ -20,8 +20,8 @@ class SHGameComponentNominationDefault (SHGameComponent):
         # TODO this currently allows illegal picks, those necessarily have to get filtered
         # out later on (in case someone decides to be malicious) but not presenting a TLed
         # seat as an option would be nice, for instance.
-        for i in range(parent.size):
-            await self.private_message.add_reaction(parent.request_emoji(i + 1))
+        for i in range(self.parent.size):
+            await self.private_message.add_reaction(self.parent.request_emoji(i + 1))
 
     async def Handle(self, context):
         if context[0] == "message":

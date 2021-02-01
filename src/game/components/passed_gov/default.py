@@ -1,17 +1,17 @@
 from src.game.components.component_base import SHGameComponent
 from src.utils import message as msg
 
-class SHGameComponentPassedGovDefault (SHGameComponent):
+class SHGameComponentPassed_govDefault (SHGameComponent):
 
     async def __init__(self, parent, client):
-        super( parent, client )
+        super(SHGameComponentPassed_govDefault, self).__init__(parent=parent, client=client)
         # ...
 
-    async def Setup(self, parent, client):
+    async def Setup(self):
         ##
         # Appends this government to the gov history
         #
-        parent.game_data["s_government_history"].append((self.parent.game_data["s_president"], self.parent.game_data["s_chancellor"]))
+        self.parent.game_data["s_government_history"].append((self.parent.game_data["s_president"], self.parent.game_data["s_chancellor"]))
         #TODO call legislative session
         
     ##

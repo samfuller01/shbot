@@ -4,26 +4,26 @@ from src.utils import message as msg
 class SHGameComponentVotingDefault (SHGameComponent):
 
     async def __init__(self, parent, client):
-        super( parent, client )
+        super(SHGameComponentVotingDefault, self).__init__(parent=parent, client=client)
         # ...
 
-    async def Setup(self, parent, client):
+    async def Setup(self):
         self.vote_messages = []
         self.has_voted = [] # 0 = no, 1 = yes
         self.vote_value = [] # 0 = nein, 1 = ja
 
         # message people to vote
-        for i in range(parent.size):
-            msg = await parent.message_seat(i + 1, "Vote on the following government:\n" + 
-                                "President: " + parent.president + "\n" + 
-                                "Chancellor: " + parent.chancellor)
+        for i in range(self.parent.size):
+            msg = await self.parent.message_seat(i + 1, "Vote on the following government:\n" + 
+                                "President: " + self.parent.president + "\n" + 
+                                "Chancellor: " + self.parent.chancellor)
             self.vote_messages.append(msg)
             self.has_voted.append(0)
             self.vote_value.append(0)
             
-        for i in range(parent.size):
-            await self.vote_messages[i].add_reaction(parent.request_emoji("ja"))
-            await self.vote_messages[i].add_reaction(parent.request_emoji("nein"))
+        for i in range(self.parent.size):
+            await self.vote_messages[i].add_reaction(self.parent.request_emoji("ja"))
+            await self.vote_messages[i].add_reaction(self.parent.request_emoji("nein"))
         # record their votes
 
     async def Handle(self, context):

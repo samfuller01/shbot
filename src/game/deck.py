@@ -26,24 +26,25 @@ class SHDeck (object):
         # I'm abandoning hope pogU
         #
         
-        with json.loads(preset) as _preset:
-            #
-            # Still need to decide what the config is, can change if necessary.
-            # If there's no data about a custom deck, build a standard one.
-            #
-            _standard_deck = _preset == None or "deck" not in _preset or _preset["deck"] == None or len(_preset["deck"] == 0)
-            if _standard_deck:
-                self.deck = []
-                # unused variable "i" :pepeLaugh:
-                for i in range(self.DEFAULT_LIB_POLICIES):
-                    self.deck.append(0)
-                for i in range(self.DEFAULT_FAS_POLICIES):
-                    self.deck.append(1)
-                self.shuffle(False)
-            else:
-                pass
+        _preset = json.load(open(preset))
+        
+        #
+        # Still need to decide what the config is, can change if necessary.
+        # If there's no data about a custom deck, build a standard one.
+        #
+        _standard_deck = _preset == None or "deck" not in _preset or _preset["deck"] == None or len(_preset["deck"] == 0)
+        if _standard_deck:
+            self.deck = []
+            # unused variable "i" :pepeLaugh:
+            for i in range(self.DEFAULT_LIB_POLICIES):
+                self.deck.append(0)
+            for i in range(self.DEFAULT_FAS_POLICIES):
+                self.deck.append(1)
+            self.shuffle(False)
+        else:
+            pass
 
-            self.discard = []
+        self.discard = []
 
     #
     # Shuffles the deck. If include_discard is set to true, also reshuffles

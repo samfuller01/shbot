@@ -1,4 +1,5 @@
 from src.game.components.create_component import CreateComponentFromQualified
+from src.utils.aobject import aobject
 
 import json
 
@@ -7,9 +8,9 @@ import json
 #   game logic. Controls the board, the component matrix,
 #   the policy state, and the active components in the parent.
 #
-class SHBoard (object):
+class SHBoard (aobject):
 
-    def __init__(self, preset = None, parent = None, client = None, size = None, context = None):
+    async def __init__(self, preset = None, parent = None, client = None, size = None, context = None):
         #
         #   For functionality, keeps a ref to the Game and Client.
         #
@@ -43,7 +44,8 @@ class SHBoard (object):
         #   Load in the starting elements. 
         #
         for key in self.starting_ruleset:
-            self.parent.activeComponents.update({ key:  CreateComponentFromQualified(self.parent, context, key, self.starting_ruleset[key]) })
+            _comp = await CreateComponentFromQualified(self.parent, context, key, self.starting_ruleset[key])
+            self.parent.activeComponents.update({ key: _comp })
         #
         #   Policy info.
         #

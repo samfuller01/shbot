@@ -45,16 +45,30 @@ async def Shutdown():
 # EVENTS
 ###################
 
+async def cleanup(guild):
+    for channel in guild.text_channels:
+        if channel.name.startswith("seat") or channel.name == "game-chat" or channel.name == "board-state":
+            await channel.delete()
+    for category in guild.categories:
+        if category.name.startswith("Secret Hitler"):
+            await category.delete()
+
 @client.event
 async def on_ready():
     await msg.send(tag="info", location=__file__, channel=None, msg_type="plain", delete_after=None,
                    content="Connected as {name}#{num}!".format(name=client.user.name, num=client.user.discriminator))
+    for guild in client.guilds:
+        await cleanup(guild) # TODO remove this once we actually have an intelligent game management system in place.
+                             # currently just purges all games on startup.
 
 @client.event
 async def on_message(message):
     #
     #   Is this message intended to be read by us?
     #
+    if (message.author.bot):
+        return
+
     if (message.author.bot or not message.content.startswith(config["prefix"])):
         return
 
@@ -71,6 +85,8 @@ async def on_message(message):
     #
     #   TODO: permissions structure for global commands!
     #
+    
+    
     if command == 'creategame':
 
         #
@@ -171,6 +187,7 @@ async def on_message(message):
         client.loop.create_task(activeGame.Teardown())
         activeGames.pop(message.channel.category.id)
 
+    
     #
     #   If not, just pass it along to the relevant
     #   game, and let it handle the message.
