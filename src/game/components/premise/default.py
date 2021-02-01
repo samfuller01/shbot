@@ -39,12 +39,12 @@ class SHGameComponentPremiseDefault(SHGameComponent):
     async def __init__(self, parent, client):
         super(parent, client)
         # ...
-    
-    async def Setup(self, parent, client):
-        _roles = list(x for x in get_base_roles(parent.size))
+
+    async def Setup(self):
+        _roles = list(x for x in get_base_roles(self.parent.size))
         _num_fascists = sum([1 for x in _roles if x == "F"])
         random.shuffle(_roles)
-        for i in range(parent.size):
+        for i in range(self.parent.size):
             _n = i+1
             self.seats[_n]["role"] = roles[i]
             msg = "The game begins and you receive the " + get_role_name(roles[i]) + " role."
@@ -53,14 +53,11 @@ class SHGameComponentPremiseDefault(SHGameComponent):
             elif roles[i] == "F":
                 for j in range(parent.size):
                     if roles[j] == "F" and j != i:
-                        msg += "\nYou see that " + parent.seats[j+1]["name"] + " is also a **Fascist.**"
+                        msg += "\nYou see that " + self.parent.seats[j+1]["name"] + " is also a **Fascist.**"
                 for j in range(self.num_players):
                     if roles[j] == "H" and j != i:
-                        msg += "\nYou see that " + parent.seats[j+1]["name"] + " is **Hitler.** They " + 
-                                    "do not know who you are."
-            #message this to the player
-        
-                
+                        msg += "\nYou see that " + self.parent.seats[j+1]["name"] + " is **Hitler.** They " + "do not know who you are."
+            #message this to the player 
 
 
 

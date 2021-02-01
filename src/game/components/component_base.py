@@ -1,11 +1,12 @@
 from src.game.components import *
+from src.game.game_base import aobject
 
 import discord
 
 #
 #   Interface for game overlay objects.
 #
-class SHGameComponent (object):
+class SHGameComponent (aobject):
 
     #
     # parent : SHGame
@@ -14,9 +15,9 @@ class SHGameComponent (object):
     # client : DiscordClient
     #   a ref to the bot client
     #
-    def __init__(self, parent, stage):
-        self.stage  = stage
+    def __init__(self, parent, client):
         self.parent = parent
+        self.client = client
         # ...
 
     #

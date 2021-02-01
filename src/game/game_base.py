@@ -233,8 +233,16 @@ class SHGame (aobject):
     # ...
     # anything else is a helper method!
 
+    def UpdateToComponent(self, name=None, policyPlayed=False):
+        self.prevRef         = self.currRef
+        self.currRef         = name
+        self.shouldProgress  = True
+        self.policyWasPlayed = policyPlayed
+
+
     async def message_main (self, tag="info", location=None, msg_type="plain", delete_after=None, content=None):
         await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
+
 
     async def message_seat (self, s_seat_num, 
         tag="info", location=None, msg_type="plain",
