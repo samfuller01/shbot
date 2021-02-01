@@ -211,19 +211,18 @@ class SHGame (aobject):
     #
     #   Cleans up the game and deletes the category and channels.
     #
-    def Teardown(self):
+    async def Teardown(self):
 
-        self.client.loop.create_task(self.gameChatChannel.delete())
-        self.client.loop.create_task(self.boardImgChannel.delete())
+        await self.gameChatChannel.delete()
+        await self.boardImgChannel.delete()
 
         for ch in self.privateChannels:
-            self.client.loop.create_task(ch.delete())
+            await ch.delete()
 
-        self.client.loop.create_task(self.category.delete())
+        await self.category.delete()
 
-        self.client.loop.create_task(
-            msg.send(tag="warning", location=__file__, channel=None, msg_type="plain", delete_after=None,
-                     content="Deleting game {uuid}!".format(self.pseudoID)))
+        await msg.send(tag="warning", location=__file__, channel=None, msg_type="plain", delete_after=None,
+                     content="Deleting game {uuid}!".format(uuid=self.pseudoID))
 
     # ...
     # anything else is a helper method!
@@ -239,7 +238,7 @@ class SHGame (aobject):
         await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
 
 
-    async def message_seat (self, s_seat_num, 
+    async def message_seat (self, s_seat_num,
         tag="info", location=None, msg_type="plain",
         delete_after=None, content=None
     ):

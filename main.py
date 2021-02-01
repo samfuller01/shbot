@@ -38,7 +38,7 @@ async def Setup():
 #
 async def Shutdown():
     await Save()
-    for (cat, game) in activeGames:
+    for (cat, game) in activeGames.items():
         await game.Teardown()
 
 ###################
@@ -150,10 +150,8 @@ async def on_message(message):
         _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
         activeGames.update( {_newcategory.id: _newgame} )
         await _newgame.Setup()
-
         await msg.send(tag="success", location=__file__, channel=None, msg_type="plain", delete_after=None,
                        content="Game {uuid} created!".format(uuid=_pseudoUUID))
-
         return
 
     if command == 'deletegame':
@@ -184,10 +182,11 @@ async def on_message(message):
         for player in activeGame.players:
             if player.id in activePlayers:
                 activePlayers.pop(player.id)
-        client.loop.create_task(activeGame.Teardown())
-        activeGames.pop(message.channel.category.id)
 
-    
+        _the_id = message.channel.category.id
+        await activeGame.Teardown()
+        activeGames.pop(_the_id)
+
     #
     #   If not, just pass it along to the relevant
     #   game, and let it handle the message.
@@ -202,8 +201,7 @@ async def on_message(message):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    _guild    = await client.fetch_guild(payload.guild_id)
-    _channel  = await _guild.get_channel(payload.channel_id)
+    _channel  = await client.get_channel(payload.channel_id)
     _message  = await _channel.fetch_message(payload.message_id)
     _category = _message.channel.category.id
 
@@ -215,8 +213,7 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    _guild    = await client.fetch_guild(payload.guild_id)
-    _channel  = await _guild.get_channel(payload.channel_id)
+    _channel  = await client.fetch_channel(payload.channel_id)
     _message  = await _channel.fetch_message(payload.message_id)
     _category = _message.channel.category.id
 
