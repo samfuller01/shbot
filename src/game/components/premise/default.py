@@ -34,7 +34,7 @@ def get_role_name(abbrev):
 #
 # Sets up a classic game of SH.
 #
-class SHGameComponentPremiseClassic(SHGameComponent):
+class SHGameComponentPremiseDefault(SHGameComponent):
 
     async def __init__(self, parent, client):
         super(parent, client)

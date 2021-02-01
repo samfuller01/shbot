@@ -8,7 +8,7 @@ import discord
 from threading import RLock
 
 class aobject (object):
- 
+
     async def __new__(cls, *a, **kw):
         instance = super().__new__(cls)
         await instance.__init__(*a, **kw)
@@ -133,19 +133,6 @@ class SHGame (aobject):
             "s_government_history": []
         }
         #
-        #
-        #   The SHBoard holds the configuration and state
-        #   of the board. It has an matrix of the component
-        #   layout, and the state of the game.
-        #
-        #   The SHDeck holds the initial and current state of
-        #   the deck. The configuration can control policy counts.
-        #
-        _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}.json".format(root=PRESET_PATH, pre=preset)
-        self.board = SHBoard(preset=_config, parent=self, client=self.client, size=self.size, context=context)
-        self.deck  = SHDeck(_config)
-        #
-        #
         #   The array of SHGameComponents that are currently active,
         #   i.e. being used in the flow. They are retrieved from the
         #   SHBoard based on the state.
@@ -161,6 +148,17 @@ class SHGame (aobject):
             "post-policy":  None, # variant
             "policy-power": None  # variant
         }
+        #
+        #   The SHBoard holds the configuration and state
+        #   of the board. It has an matrix of the component
+        #   layout, and the state of the game.
+        #
+        #   The SHDeck holds the initial and current state of
+        #   the deck. The configuration can control policy counts.
+        #
+        _config    = DEFAULT_PRESETS[self.size] if preset == None or preset == "default" else "{root}/{pre}.json".format(root=PRESET_PATH, pre=preset)
+        self.board = SHBoard(preset=_config, parent=self, client=self.client, size=self.size, context=context)
+        self.deck  = SHDeck(_config)
         #
         #   The current component. The actual objects active at any 
         #   given point in time are in the array, but fetched using the string.
