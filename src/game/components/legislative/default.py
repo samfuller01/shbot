@@ -33,6 +33,9 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
             else:
                 await self.parent.message_seat(self.parent.game_data["s_president"], "Illegal discard.")
 
+    async def Teardown(self):
+        pass
+
     ##
     # Shows the president their draw, and sets a flag
     # indicating that it is the president's turn to discard.

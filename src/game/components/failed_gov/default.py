@@ -13,3 +13,6 @@ class SHGameComponentFailed_govDefault (SHGameComponent):
     
     async def Handle(self, context):
         pass
+
+    async def Teardown(self):
+        pass

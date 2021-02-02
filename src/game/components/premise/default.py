@@ -45,13 +45,14 @@ class SHGameComponentPremiseDefault(SHGameComponent):
         _roles = list(x for x in get_base_roles(self.parent.size))
         _num_fascists = sum([1 for x in _roles if x == "F"])
         random.shuffle(_roles)
-        await self.parent.message_main(content="test")
+        #await self.parent.message_main(content="test")
         for i in range(self.parent.size):
             s_n = i+1
             self.parent.s_seats[s_n]["role"] = _roles[i]
             msg = "The game begins and you receive the " + get_role_name(_roles[i]) + " role."
             if _roles[i] == "H":
-                msg += "\nThere are" + str(_num_fascists) + " **Fascists,** they know who you are."
+                _grammar = ("is " + str(_num_fascists) + " **Fascist**,") if _num_fascists == 1 else ("are " + str(_num_fascists) + " **Fascists,**")
+                msg += "\nThere " + _grammar + " they know who you are."
             elif _roles[i] == "F":
                 for j in range(self.parent.size):
                     if _roles[j] == "F" and j != i:

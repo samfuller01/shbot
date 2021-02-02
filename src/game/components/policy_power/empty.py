@@ -18,3 +18,5 @@ class SHGameComponentPolicy_powerEmpty (SHGameComponent):
     async def Handle(self, context):
         pass
 
+    async def Teardown(self):
+        pass

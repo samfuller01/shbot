@@ -46,6 +46,7 @@ async def Shutdown():
 ###################
 
 async def cleanup(guild):
+    print(guild.text_channels)
     for channel in guild.text_channels:
         if channel.name.startswith("seat") or channel.name == "game-chat" or channel.name == "board-state":
             await channel.delete()
@@ -201,9 +202,14 @@ async def on_message(message):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    _channel  = await client.get_channel(payload.channel_id)
+    if payload.member.bot:
+        return 
+
+    _channel  = client.get_channel(payload.channel_id)
     _message  = await _channel.fetch_message(payload.message_id)
     _category = _message.channel.category.id
+
+    #print(payload.emoji)
 
     if _category in activeGames:
         activeGame = activeGames.get(_category)
@@ -213,7 +219,7 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    _channel  = await client.fetch_channel(payload.channel_id)
+    _channel  = client.get_channel(payload.channel_id)
     _message  = await _channel.fetch_message(payload.message_id)
     _category = _message.channel.category.id
 

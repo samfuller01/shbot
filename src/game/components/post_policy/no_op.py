@@ -14,7 +14,8 @@ class SHGameComponentPost_policyNo_op (SHGameComponent):
     async def Setup(self):
         pass
 
-
     async def Handle(self, context):
         pass
 
+    async def Teardown(self):
+        pass

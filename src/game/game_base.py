@@ -235,7 +235,7 @@ class SHGame (aobject):
 
 
     async def message_main (self, tag="info", location=None, msg_type="plain", delete_after=None, content=None):
-        await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
+        return await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
 
 
     async def message_seat (self, s_seat_num,
@@ -243,7 +243,40 @@ class SHGame (aobject):
         delete_after=None, content=None
     ):
         if 0 <= s_seat_num <= self.size:
-            await msg.send(tag=tag, location=location, channel=self.privateChannels[s_seat_num - 1], msg_type=msg_type, delete_after=delete_after, content=content)
+            return await msg.send(tag=tag, location=location, channel=self.privateChannels[s_seat_num - 1], msg_type=msg_type, delete_after=delete_after, content=content)
 
-    async def request_emoji(self, name):
-        return 0
+    def request_emoji(self, name):
+        if name == 1:
+            return "<:bridge_at_dawn:804837797848416317>"
+        elif name == 2:
+            return "<:bridge_at_day:804838279206797362>"
+        elif name == 3:
+            return "<:bridge_at_dusk:804831260685893672>"
+        elif name == 4:
+            return "<:rainbow_bridge:806005320476131328>"
+        elif name == 5:
+            return "<:snowy:804985355111628810>"
+        elif name == 6:
+            return "<:stormy:805302129580441641>"
+        elif name == "ja":
+            return "<:ja:799071595615748106>"
+        elif name == "nein":
+            return "<:nein:799071624749907970>"
+    
+    def request_emoji_id(self, name):
+        if name == 1:
+            return 804837797848416317
+        elif name == 2:
+            return 804838279206797362
+        elif name == 3:
+            return 804831260685893672
+        elif name == 4:
+            return 806005320476131328
+        elif name == 5:
+            return 804985355111628810
+        elif name == 6:
+            return 805302129580441641
+        elif name == "ja":
+            return 799071595615748106
+        elif name == "nein":
+            return 799071624749907970

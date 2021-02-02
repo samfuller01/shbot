@@ -25,3 +25,6 @@ class SHGameComponentPassedGovHitlerZone (SHGameComponent):
     #
     async def Handle(self, context):
         pass
+
+    async def Teardown(self):
+        pass

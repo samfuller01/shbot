@@ -14,9 +14,9 @@ class SHGameComponentVotingDefault (SHGameComponent):
 
         # message people to vote
         for i in range(self.parent.size):
-            msg = await self.parent.message_seat(i + 1, "Vote on the following government:\n" + 
-                                "President: " + self.parent.president + "\n" + 
-                                "Chancellor: " + self.parent.chancellor)
+            msg = await self.parent.message_seat(i + 1, content="Vote on the following government:\n" + 
+                                "President: " + self.parent.s_seats[self.parent.game_data["s_president"]]["name"] + "\n" + 
+                                "Chancellor: " + self.parent.s_seats[self.parent.game_data["s_chancellor"]]["name"])
             self.vote_messages.append(msg)
             self.has_voted.append(0)
             self.vote_value.append(0)
@@ -37,21 +37,24 @@ class SHGameComponentVotingDefault (SHGameComponent):
             _message = context[2]
             _channel = _message.channel
             # TODO use the ID instead of the channel thanks rsar
-            s_seat = self.parent.privateChannels.index(_channel) + 1
+            s_seat = [x.id for x in self.parent.privateChannels].index(_channel.id) + 1
             if 1 <= s_seat <= self.parent.size:
                 self.has_voted[s_seat - 1] = 1
-                if _event.emoji == self.parent.request_emoji("ja"):
+                if _event.emoji.id == self.parent.request_emoji_id("ja"):
                     self.vote_value[s_seat - 1] = 1
-                    await self.parent.message_main("Player has voted.")
-                    await self.parent.message_seat(s_seat, "Vote **ja** registered.", delete_after=5)
-                elif _event.emoji == self.parent.request_emoji("nein"):
+                    await self.parent.message_main(content="Player has voted.")
+                    await self.parent.message_seat(s_seat, content="Vote **ja** registered.", delete_after=5)
+                elif _event.emoji.id == self.parent.request_emoji_id("nein"):
                     self.vote_value[s_seat - 1] = 0
-                    await self.parent.message_main("Player has voted.")
-                    await self.parent.message_seat(s_seat, "Vote **nein** registered.", delete_after=5)
+                    await self.parent.message_main(content="Player has voted.")
+                    await self.parent.message_seat(s_seat, content="Vote **nein** registered.", delete_after=5)
                 await self.tally_votes()
             else:
-                await self.parent.message_seat(self.parent.president, "Bad emoji")
+                await self.parent.message_seat(self.parent.game_data["s_president"], "Bad emoji")
     
+    async def Teardown(self):
+        pass
+
     async def tally_votes(self):
         _counted_votes = 0
         _votes = {
@@ -66,25 +69,23 @@ class SHGameComponentVotingDefault (SHGameComponent):
                     _votes[self.vote_value[i]].append(i)
                 else:
                     return
-        _message = "Jas: " + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[1])) + "\nNeins:" + ", ".join(list(self.parent.seats[x]["name"] for x in _votes[0]))
+        _message = "Jas: " + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[1])) + "\nNeins:" + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[0]))
         
         _passed = len(_votes[1]) > len(_votes[0])
 
         if _passed:
             _message = "The vote passed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
             
-            await self.parent.message_main(_message)
+            await self.parent.message_main(content=_message)
 
             # TODO check for hitler win, although this might get done in passed_gov
             # TODO call government_success()
         else:
             _message = "The vote failed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
-            await self.parent.message_main(_message)
+            await self.parent.message_main(content=_message)
             # TODO call government_fail()
             
-        
-            
-
+    
     ##
     # Returns whether a player is allowed to vote (e.g., maybe they're dead)
     # However, I'm lazy, so it's a TODO
