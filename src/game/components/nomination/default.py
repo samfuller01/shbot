@@ -49,7 +49,6 @@ class SHGameComponentNominationDefault (SHGameComponent):
                                                         " chancellor " + self.parent.s_seats[_chan]["name"] + ". Vote in player chats.")
                         
                         self.parent.UpdateToComponent("voting", False)
-                        await self.parent.Handle(None)
                         break
             else:
                 await self.parent.message_seat(self.parent.game_data["s_president"], content="Illegal pick.")                
