@@ -12,7 +12,8 @@ class SHGameComponentPassed_govDefault (SHGameComponent):
         # Appends this government to the gov history
         #
         self.parent.game_data["s_government_history"].append((self.parent.game_data["s_president"], self.parent.game_data["s_chancellor"]))
-        #TODO call legislative session
+        self.parent.UpdateToComponent("legislative", False)
+        await self.parent.Handle(None)
         
     ##
     # Should not handle any events

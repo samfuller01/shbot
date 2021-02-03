@@ -262,6 +262,12 @@ class SHGame (aobject):
             return "<:ja:799071595615748106>"
         elif name == "nein":
             return "<:nein:799071624749907970>"
+        elif name == "F":
+            return "<:fas:799478022478626826>"
+        elif name == "L":
+            return "<:lib:799478022586892358>"
+        else:
+            return None
     
     def request_emoji_id(self, name):
         if name == 1:
@@ -280,3 +286,9 @@ class SHGame (aobject):
             return 799071595615748106
         elif name == "nein":
             return 799071624749907970
+        elif name == "F":
+            return 799478022478626826
+        elif name == "L":
+            return 799478022586892358
+        else:
+            return None

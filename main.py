@@ -46,7 +46,6 @@ async def Shutdown():
 ###################
 
 async def cleanup(guild):
-    print(guild.text_channels)
     for channel in guild.text_channels:
         if channel.name.startswith("seat") or channel.name == "game-chat" or channel.name == "board-state":
             await channel.delete()

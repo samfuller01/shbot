@@ -22,6 +22,7 @@ class SHGameComponentVotingDefault (SHGameComponent):
             self.vote_value.append(0)
             
         for i in range(self.parent.size):
+            print("adding message to position", i, "in vote messages with length", len(self.vote_messages))
             await self.vote_messages[i].add_reaction(self.parent.request_emoji("ja"))
             await self.vote_messages[i].add_reaction(self.parent.request_emoji("nein"))
         # record their votes
@@ -40,11 +41,14 @@ class SHGameComponentVotingDefault (SHGameComponent):
             s_seat = [x.id for x in self.parent.privateChannels].index(_channel.id) + 1
             if 1 <= s_seat <= self.parent.size:
                 self.has_voted[s_seat - 1] = 1
+                # If they reacted with ja
                 if _event.emoji.id == self.parent.request_emoji_id("ja"):
+                    # Update their current vote, and send a message.
                     self.vote_value[s_seat - 1] = 1
                     await self.parent.message_main(content="Player has voted.")
                     await self.parent.message_seat(s_seat, content="Vote **ja** registered.", delete_after=5)
                 elif _event.emoji.id == self.parent.request_emoji_id("nein"):
+                    # Update their current vote, and send a message.
                     self.vote_value[s_seat - 1] = 0
                     await self.parent.message_main(content="Player has voted.")
                     await self.parent.message_seat(s_seat, content="Vote **nein** registered.", delete_after=5)
@@ -68,22 +72,23 @@ class SHGameComponentVotingDefault (SHGameComponent):
                     _counted_votes += 1
                     _votes[self.vote_value[i]].append(i)
                 else:
+                    # Returns if anyone who has to vote has not yet voted.
                     return
+
+        # Gets a list of all of the votes of players
         _message = "Jas: " + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[1])) + "\nNeins:" + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[0]))
         
+        # Did the government pass? Jas must be strictly greater than Neins.
         _passed = len(_votes[1]) > len(_votes[0])
 
         if _passed:
             _message = "The vote passed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
-            
             await self.parent.message_main(content=_message)
-
-            # TODO check for hitler win, although this might get done in passed_gov
-            # TODO call government_success()
+            self.parent.UpdateToComponent("passed_gov", False)
         else:
             _message = "The vote failed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
             await self.parent.message_main(content=_message)
-            # TODO call government_fail()
+            self.parent.UpdateToComponent("failed_gov", False)
             
     
     ##

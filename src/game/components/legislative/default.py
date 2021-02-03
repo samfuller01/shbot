@@ -9,7 +9,7 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
 
     async def Setup(self):
         self.draw = self.parent.deck.draw(3)
-        self.deal_to_president()
+        await self.deal_to_president()
 
     async def Handle(self, context):
         if context[0] == "message":
@@ -45,7 +45,7 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
     async def deal_to_president(self):
         _draw_contents = ''.join([(self.parent.request_emoji("F") if x == 1 else self.parent.request_emoji("L") for x in self.draw)])
         _message_content = "Your draw: " + _draw_contents + "\nChoose a policy to discard."
-        self.private_message = await self.message_seat(self.parent.game_data["s_president"], _message_content)
+        self.private_message = await self.message_seat(self.parent.game_data["s_president"], content=_message_content)
         self.status = "await_president_discard"
         for i in range(len(self.draw)):
             await self.private_message.add_reaction(self.parent.request_emoji(i + 1))
@@ -57,7 +57,7 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
     async def deal_to_chancellor(self):
         _draw_contents = ''.join([(self.parent.request_emoji("F") if x == 1 else self.parent.request_emoji("L") for x in self.draw)])
         _message_content = "Your draw: " + _draw_contents + "\nChoose a policy to play."
-        self.private_message = await self.message_seat(self.parent.game_data["s_chancellor"], _message_content)
+        self.private_message = await self.message_seat(self.parent.game_data["s_chancellor"], content=_message_content)
         self.status = "await_chancellor_discard"
         for i in range(len(self.draw)):
             await self.private_message.add_reaction(self.parent.request_emoji(i + 1))

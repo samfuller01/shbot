@@ -37,7 +37,6 @@ class SHGameComponentNominationDefault (SHGameComponent):
                 _expected_emoji_id = self.parent.request_emoji_id(i + 1)
 
                 if _expected_emoji_id is not None and _expected_emoji_id == _event.emoji.id:
-                    print("yayaya")
                     if self.is_legal_pick(i + 1):
                         _pres = self.parent.game_data["s_president"]
                         _chan = i + 1
@@ -49,7 +48,7 @@ class SHGameComponentNominationDefault (SHGameComponent):
                                                         " chancellor " + self.parent.s_seats[_chan]["name"] + ". Vote in player chats.")
                         
                         self.parent.UpdateToComponent("voting", False)
-                        break
+                        return
             else:
                 await self.parent.message_seat(self.parent.game_data["s_president"], content="Illegal pick.")                
 

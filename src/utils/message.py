@@ -17,7 +17,7 @@ async def send (
     tag="info", location=None, channel=None, msg_type="plain",
     delete_after=None, content=None
 ):
-     if location is not None:
+    if location is not None:
         print("{date} {coltag} {thetag} {coldef} {coltent} {content} {coldef} ({file})".format(
                 date=datetime.utcnow().strftime('%I:%M:%S %p - %f').ljust(19),
                 coltag=COLORS[tag], thetag=tag.upper().ljust(7), coldef=COLORS["default"],

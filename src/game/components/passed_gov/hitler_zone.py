@@ -17,8 +17,8 @@ class SHGameComponentPassedGovHitlerZone (SHGameComponent):
             # TODO end game
             pass
         else:
-            #TODO call legislative session
-            pass
+            self.parent.UpdateToComponent("legislative", False)
+            await self.parent.Handle(None)
         
     ##
     # Should not handle any events
