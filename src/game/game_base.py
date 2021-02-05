@@ -202,9 +202,9 @@ class SHGame (aobject):
             self.shouldProgress = False
 
         if (self.shouldProgress):
+            self.shouldProgress = False
             await self.activeComponents[self.prevRef].Teardown()
             await self.activeComponents[self.currRef].Setup()
-            self.shouldProgress = False
 
         self.mutex.release()
 

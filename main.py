@@ -3,6 +3,7 @@ import re
 import discord
 import discord.ext.commands as commands
 import asyncio
+from threading import Thread
 
 from src.utils import message as msg
 from src.game.game_base import SHGame
@@ -194,7 +195,8 @@ async def on_message(message):
     categoryID = message.channel.category_id
     if categoryID in activeGames:
         activeGame = activeGames.get(categoryID)
-        client.loop.create_task(activeGame.Handle(("message", message, command, args)))
+        auxthread = Thread(group = None, target = asyncio.run_coroutine_threadsafe, args = (activeGame.Handle(("message", message, command, args)), client.loop))
+        auxthread.start()
 
     client.loop.create_task(client.process_commands(message))
 
@@ -212,7 +214,8 @@ async def on_raw_reaction_add(payload):
 
     if _category in activeGames:
         activeGame = activeGames.get(_category)
-        client.loop.create_task(activeGame.Handle(("reaction", payload, _message, "add")))
+        auxthread = Thread(group = None, target = asyncio.run_coroutine_threadsafe, args = (activeGame.Handle(("reaction", payload, _message, "add")), client.loop))
+        auxthread.start()
 
 
 
@@ -224,7 +227,8 @@ async def on_raw_reaction_remove(payload):
 
     if _category in activeGames:
         activeGame = activeGames.get(_category)
-        client.loop.create_task(activeGame.Handle(("reaction", payload, _message, "remove")))
+        auxthread = Thread(group = None, target = asyncio.run_coroutine_threadsafe, args = (activeGame.Handle(("reaction", payload, _message, "remove")), client.loop))
+        auxthread.start()
 
 
 ###################
