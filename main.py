@@ -6,6 +6,7 @@ import asyncio
 
 from src.utils import message as msg
 from src.game.game_base import SHGame
+from src.minigames.trivia_game import TriviaGame
 
 f = open('config.json')
 config = json.load(f)
@@ -50,7 +51,7 @@ async def cleanup(guild):
         if channel.name.startswith("seat") or channel.name == "game-chat" or channel.name == "board-state":
             await channel.delete()
     for category in guild.categories:
-        if category.name.startswith("Secret Hitler"):
+        if category.name.startswith("Secret Hitler") or category.name.startswith("Trivia"):
             await category.delete()
 
 @client.event
@@ -69,16 +70,19 @@ async def on_message(message):
     if (message.author.bot):
         return
 
-    if (message.author.bot or not message.content.startswith(config["prefix"])):
-        return
+    #if (message.author.bot or not message.content.startswith(config["prefix"])):
+    #    return
+
+
 
     #
     #   What's this message?
     #
-    _content = message.content[len(config["prefix"]):]
+    _content = message.content
     _m_array = _content.split()
-    command  = _m_array[0]
-    args     = _m_array[1:]
+    directory = _m_array[0]
+    command  = _m_array[1] if len(_m_array) > 1 else None
+    args     = _m_array[2:] if len(_m_array) > 1 else None
 
     #
     #   Is this a special or global command?
@@ -145,9 +149,17 @@ async def on_message(message):
         #
         _newcategory = await message.guild.create_category("Secret Hitler")
         _pseudoUUID  = str(_newcategory.id)[:8]
-        await _newcategory.edit(name="Secret Hitler {uuid}".format(uuid=_pseudoUUID))
+        
         _desiredmode = args[0]
-        _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
+        _newgame = None
+        if directory == "sh!":
+            _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
+            await _newcategory.edit(name="Secret Hitler {uuid}".format(uuid=_pseudoUUID))
+        elif directory == "trivia!":
+            _newgame     = await TriviaGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
+            await _newcategory.edit(name="Trivia {uuid}".format(uuid=_pseudoUUID))
+        else:
+            return
         activeGames.update( {_newcategory.id: _newgame} )
         await _newgame.Setup()
         await msg.send(tag="success", location=__file__, channel=None, msg_type="plain", delete_after=None,
