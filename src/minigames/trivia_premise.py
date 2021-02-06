@@ -23,7 +23,7 @@ class TriviaComponentPremiseDefault(TriviaGameComponent):
         _parent_data["num_failed"] = 0
 
         self.parent.num_questions_to_win = 10
-        await asyncio.sleep(10)
+        await asyncio.sleep(3)
         self.parent.UpdateToComponent("question")
         await self.parent.Handle(None)
 

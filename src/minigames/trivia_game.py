@@ -47,7 +47,7 @@ class TriviaGame (aobject):
 		#	The base permissions used by channels in this game.
 		#
         self.basePermissions = {
-			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=False, read_messages=False), 
+			self.category.guild.default_role: discord.PermissionOverwrite(send_messages=True), #TODO fix this lol 
             # TODO flesh this out ^ (read messages = False, only added to prevent spam notifs for people who have them turned on)
 			self.category.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
 		}
@@ -57,9 +57,14 @@ class TriviaGame (aobject):
 		#	The board is read-only, and only players can chat in the game chat.
         #
         _gameChatPermissions = self.basePermissions.copy()
-        for player in players:
-            _gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )
+        """for player in players:
+            print(player.name)
+            _gameChatPermissions.update( {player: discord.PermissionOverwrite(read_messages=True) } )
+            _gameChatPermissions.update( {player: discord.PermissionOverwrite(send_messages=True) } )"""
         self.gameChatChannel = await self.category.create_text_channel("game-chat", overwrites=_gameChatPermissions)
+        for player in players:
+            await self.gameChatChannel.set_permissions(player, read_messages=True)
+            await self.gameChatChannel.set_permissions(player, send_messages=True)
         #
         #
         #   The list of players simply maps players to seats.
@@ -153,7 +158,7 @@ class TriviaGame (aobject):
         #   to the active component.
         #
         self.mutex.acquire(blocking=True)
-        
+
         if event != None: # TODO too hacky? this is for non-awaiting game components
             await self.activeComponents[self.currRef].Handle(event)
 
