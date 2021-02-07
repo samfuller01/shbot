@@ -8,8 +8,12 @@ class SHGameComponentFailed_govDefault (SHGameComponent):
         # ...
 
     async def Setup(self):
-        await self.parent.message_main("The election fails.")
-        # TODO call tracker to update with a failed gov response.
+        _message = "The election fails and the election tracker moves forward. ("
+        _message += str("TODO") + "/" + str(3) +")." # TODO
+
+        await self.parent.message_main(content=_message)
+        self.parent.UpdateToComponent("tracker", False)
+        await self.parent.Handle(None)
     
     async def Handle(self, context):
         pass

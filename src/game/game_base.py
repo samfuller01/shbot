@@ -124,7 +124,8 @@ class SHGame (aobject):
         self.game_data = {
             "s_president": 1,
             "s_chancellor": None,
-            "s_government_history": []
+            "s_government_history": [],
+            "game_over": False
         }
         #
         #   The array of SHGameComponents that are currently active,
@@ -136,11 +137,11 @@ class SHGame (aobject):
             "tracker":      None, # invariant
             "nomination":   None, # variant
             "voting":       None, # variant
-            "passed-gov":   None, # variant
-            "failed-gov":   None, # variant
+            "passed_gov":   None, # variant
+            "failed_gov":   None, # variant
             "legislative":  None, # variant
-            "post-policy":  None, # variant
-            "policy-power": None  # variant
+            "post_policy":  None, # variant
+            "policy_power": None  # variant
         }
         #
         #   The SHBoard holds the configuration and state
@@ -195,15 +196,17 @@ class SHGame (aobject):
             await self.activeComponents[self.currRef].Handle(event)
 
         if (self.policyWasPlayed):
-            await self.activeComponents[self.prevRef].Teardown()
-            await self.board.UpdateComponents()
-            await self.activeComponents[self.currRef].Setup()
             self.policyWasPlayed = False
             self.shouldProgress = False
+            await self.activeComponents[self.prevRef].Teardown()
+            await self.board.UpdateComponents()
+            print(self.activeComponents[self.currRef])
+            await self.activeComponents[self.currRef].Setup()
 
         if (self.shouldProgress):
             self.shouldProgress = False
             await self.activeComponents[self.prevRef].Teardown()
+            print("setting up " + self.currRef)
             await self.activeComponents[self.currRef].Setup()
 
         self.mutex.release()
@@ -232,7 +235,7 @@ class SHGame (aobject):
         self.currRef         = name
         self.shouldProgress  = True
         self.policyWasPlayed = policyPlayed
-
+    
 
     async def message_main (self, tag="info", location=None, msg_type="plain", delete_after=None, content=None):
         return await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)

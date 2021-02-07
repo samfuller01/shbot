@@ -13,6 +13,7 @@ class SHGameComponentPassed_govDefault (SHGameComponent):
         #
         self.parent.game_data["s_government_history"].append((self.parent.game_data["s_president"], self.parent.game_data["s_chancellor"]))
         self.parent.UpdateToComponent("legislative", False)
+        print("got here pog?")
         await self.parent.Handle(None)
         
     ##

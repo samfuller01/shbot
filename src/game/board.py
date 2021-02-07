@@ -65,6 +65,13 @@ class SHBoard (aobject):
     #
     #   modifies : self.parent.activeComponents
     #
-    def UpdateComponents(self):
+    async def UpdateComponents(self):
+        print(self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]])
+        print(self.parent.activeComponents)
         for key in self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]]:
-            self.activeComponents.update({ key, self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]][key] })
+            _name = self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]][key]
+            d = {
+                key: await CreateComponentFromQualified(parent=self.parent, context=None, slot=key, name=_name)
+            }
+            self.parent.activeComponents.update(d)
+        print(self.parent.activeComponents)

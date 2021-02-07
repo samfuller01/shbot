@@ -76,17 +76,19 @@ class SHGameComponentVotingDefault (SHGameComponent):
                     return
 
         # Gets a list of all of the votes of players
-        _message = "Jas: " + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[1])) + "\nNeins:" + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[0]))
+        _message = "Jas: " + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[1])) + "\nNeins: " + ", ".join(list(self.parent.s_seats[x + 1]["name"] for x in _votes[0]))
         
         # Did the government pass? Jas must be strictly greater than Neins.
         _passed = len(_votes[1]) > len(_votes[0])
 
         if _passed:
             _message = "The vote passed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
+            self.parent.game_data["tracker_status"] = "success"
             await self.parent.message_main(content=_message)
             self.parent.UpdateToComponent("passed_gov", False)
         else:
             _message = "The vote failed by a margin of " + str(len(_votes[1])) + " to " + str(len(_votes[0])) + ".\n" + _message
+            self.parent.game_data["tracker_status"] = "fail"
             await self.parent.message_main(content=_message)
             self.parent.UpdateToComponent("failed_gov", False)
             

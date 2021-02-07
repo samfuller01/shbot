@@ -46,11 +46,18 @@ class SHDeck (object):
 
         self.discard = []
 
+    ##
+    # Reshuffles the deck if there are fewer than 3 cards.
+    #
+    def reshuffle_if_needed(self):
+        if len(self.deck) < 3: # TODO magic number
+            self.shuffle(True)
+
     #
     # Shuffles the deck. If include_discard is set to true, also reshuffles
     # in all discarded policies.
     # 
-    # modifies: self.deeznuts
+    # modifies: self.deck, self.discard
     #
     def shuffle(self, include_discard = True):
         if include_discard:
@@ -72,9 +79,9 @@ class SHDeck (object):
             return _draw
     
     #
-    # Helper methods :jerry:
+    # Helper methods
     #
-    def discard(self, policy):
+    def discard_policy(self, policy):
         self.discard.append(policy)
 
     #
