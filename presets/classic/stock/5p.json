@@ -40,11 +40,11 @@
 				"passed_gov"  : "hitler_zone"
 			},
 			{
-				"policy_power": "execute",
-				"legislative" : "in_veto"
+				"policy_power": "execute"
 			},
 			{
-				"policy_power": "execute"
+				"policy_power": "execute",
+				"legislative" : "in_veto"
 			},
 			{
 				"policy_power": "empty"

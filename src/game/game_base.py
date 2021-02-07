@@ -237,6 +237,50 @@ class SHGame (aobject):
         self.policyWasPlayed = policyPlayed
     
 
+    ##
+    # Enacts a given policy (of type 1 or 0, or as specified
+    # in SHDeck. If fire_event is set to true, instructs
+    # this object to handle a dummy Event.
+    #
+    async def enact_policy(self, policy_type, was_topdecked=False, fire_event=True):
+        print("got here 1.5")
+        _board = self.board
+        _policy_emoji = None
+        print(policy_type)
+        print("got here 2")
+        if policy_type == 0: # TODO Magic numbers, to an extent.
+            _board.policiesPlayed["Liberal"] += 1
+            _board.lastPolicy = "Liberal"
+            _policy_emoji = self.request_emoji("L")
+        elif policy_type == 1:
+            _board.policiesPlayed["Fascist"] += 1
+            _board.lastPolicy = "Fascist"
+            _policy_emoji = self.request_emoji("F")
+        else:
+            return
+        
+        _msg = "A " + _policy_emoji + " policy has been enacted."
+        _msg += str(_board.policiesPlayed[_board.lastPolicy]) + "/" + str(_board.board_lengths[_board.lastPolicy]) + ")."
+
+        print("got here 3")
+
+        await self.message_main(content=_msg)
+        ##
+        # If we topdecked a policy, no power should activate, so we go straight to
+        # post_policy. If it was played, then load the policy_power component.0
+        #
+        if was_topdecked:
+            self.UpdateToComponent("post_policy", True)
+        else:
+            self.UpdateToComponent("policy_power", True)
+
+        ##
+        # If we got here from a Setup() call, then kickstart another event
+        # to handle it.
+        #
+        if fire_event:
+            await self.Handle(None)
+
     async def message_main (self, tag="info", location=None, msg_type="plain", delete_after=None, content=None):
         return await msg.send(tag=tag, location=location, channel=self.gameChatChannel, msg_type=msg_type, delete_after=delete_after, content=content)
 
@@ -261,6 +305,8 @@ class SHGame (aobject):
             return "<:snowy:804985355111628810>"
         elif name == 6:
             return "<:stormy:805302129580441641>"
+        elif name == 7:
+            return "<:jerry:808102741309128734>"
         elif name == "ja":
             return "<:ja:799071595615748106>"
         elif name == "nein":
@@ -285,6 +331,8 @@ class SHGame (aobject):
             return 804985355111628810
         elif name == 6:
             return 805302129580441641
+        elif name == 7:
+            return 808102741309128734
         elif name == "ja":
             return 799071595615748106
         elif name == "nein":
@@ -295,3 +343,10 @@ class SHGame (aobject):
             return 799478022586892358
         else:
             return None
+
+    # yo this is absolute garbage
+    def request_emoji_value(self, emoji):
+        for i in [1, 2, 3, 4, 5, 6, 7, "ja", "nein", "F", "L"]:
+            if emoji.id == self.request_emoji_id(i):
+                return i
+        return None

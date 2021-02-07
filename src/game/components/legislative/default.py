@@ -20,22 +20,30 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
         elif context[0] == "reaction" and context[3] == "add":
             _event = context[1]
             _message = context[2]
-            for i in range(len(self.draw)):
-                if _event.emoji.id == self.parent.request_emoji_id(i + 1):
-                    if self.status == "await_president_discard":
-                        _discarded_card = self.draw[i]
-                        del self.draw[i]
-                        self.parent.deck.discard_policy(_discarded_card)
-                        await self.deal_to_chancellor()
-                        return
-                    elif self.status == "await_chancellor_discard":
-                        _played_card = self.draw.pop(i)
-                        for card_remaining in self.draw: # should always be 1 element only, but why not
-                            self.parent.deck.discard_policy(card_remaining)
-                        self.status = "enacted"
-                        self.enact_policy_via_player(_played_card)
-                        self.parent.UpdateToComponent("policy_power", True)
-                        return
+            print("card_pos:")
+            _card_pos = self.parent.request_emoji_value(_event.emoji) - 1
+            print(_card_pos)
+            _valid_discards = list(x for x in range(len(self.draw)))
+            if _card_pos != None and _card_pos in _valid_discards:
+                print("yes!")
+                if self.status == "await_president_discard":
+                    print("made it into here")
+                    _discarded_card = self.draw[_card_pos]
+                    del self.draw[_card_pos]
+                    print("here2")
+                    self.parent.deck.discard_policy(_discarded_card)
+                    print("here3")
+                    await self.deal_to_chancellor()
+                    return
+                elif self.status == "await_chancellor_discard":
+                    _played_card = self.draw[_card_pos]
+                    del self.draw[_card_pos]
+                    for card_remaining in self.draw: # should always be 1 element only, but why not
+                        self.parent.deck.discard_policy(card_remaining)
+                    self.status = "enacted"
+                    print("got here 1")
+                    await self.parent.enact_policy(_played_card, was_topdecked=False, fire_event=False)
+                    return
             else:
                 if self.status == "await_president_discard":
                     await self.parent.message_seat(self.parent.game_data["s_president"], content="Illegal discard.")
@@ -75,18 +83,3 @@ class SHGameComponentLegislativeDefault (SHGameComponent):
         self.status = "await_chancellor_discard"
         for i in range(len(self.draw)):
             await self.private_message.add_reaction(self.parent.request_emoji(i + 1))
-
-    ##
-    # Enacts a policy of the given type, as specified in SHDeck.
-    # For a default game, this will either be 1 or 0.
-    #
-    
-    def enact_policy_via_player(self, policy_type=None, was_played=True):
-        _board = self.parent.board
-        if policy_type == 0: # TODO I dislike this.
-            _board.policiesPlayed["Liberal"] += 1
-            _board.lastPolicy = "Liberal"
-            
-        elif policy_type == 1:
-            _board.policiesPlayed["Fascist"] += 1
-            _board.lastPolicy = "Fascist"

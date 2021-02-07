@@ -12,7 +12,6 @@ class SHGameComponentPolicy_powerEmpty (SHGameComponent):
         # ...
 
     async def Setup(self):
-        print("somehow got here? no way")
         self.parent.UpdateToComponent("post_policy", False)
         await self.parent.Handle(None)
 

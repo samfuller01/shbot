@@ -14,23 +14,45 @@ class SHGameComponentTrackerDefault (SHGameComponent):
         # ...
 
     async def Setup(self):
-        print("got here!")
+        ##
+        # Since tracker can be Setuped() from several places, this
+        # is a flag to keep track of which tracker action to use.
+        #
+
         _status = self.parent.game_data["tracker_status"]
-        print("got here! with status", _status)
+        ##
+        # tracker_status is set to "success" in "voting", when a government
+        # passes.
+        #
         if _status == "success":
+            # reset the tracker position
             self.tracker_pos = 0
-            print("updating president")
+            # move to the next eligible president
             self.updatePresident()
-            print("updated president")
+            self.parent.deck.reshuffle_if_needed()
+            # and prompt that president to pick a chancellor
             self.parent.UpdateToComponent("nomination", False)
             await self.parent.Handle(None)
+        ##
+        # tracker_status is set to "fail" in "voting", when a government
+        # fails.
+        #
         elif _status == "fail":
+            # move the tracker position up by one position
             self.tracker_pos += 1
+            # move to the next eligible president
             self.updatePresident()
+            # if we need to topdeck, topdeck
             if self.tracker_pos >= 3: # TODO remove magic numbers?
-                await self.top_deck_and_reset()
+                await self.top_deck()
             
             elif not self.parent.game_data["game_over"]:
+                self.parent.deck.reshuffle_if_needed()
+                self.parent.UpdateToComponent("nomination", False)
+                await self.parent.Handle(None)
+        elif _status == "reset":
+            self.tracker_pos = 0
+            if not self.parent.game_data["game_over"]:
                 self.parent.deck.reshuffle_if_needed()
                 self.parent.UpdateToComponent("nomination", False)
                 await self.parent.Handle(None)
@@ -46,6 +68,7 @@ class SHGameComponentTrackerDefault (SHGameComponent):
         if len(_spec) > 0:
             self.parent.game_data["s_president"] = _spec[0]
             _spec = _spec[1:]
+            self.parent.game_data["special_presidents"] = _spec
         else:
             print("should have gotten here")
             _pres = self.parent.game_data["s_president"]
@@ -58,30 +81,29 @@ class SHGameComponentTrackerDefault (SHGameComponent):
                     acceptable = True
             self.parent.game_data["s_president"] = _pres
     
-    async def top_deck_and_reset(self):
-        _card = self.parent.deck.draw(1)
-        self.parent.deck.reshuffle_if_needed()
-        self.tracker_pos = 0
-        self.parent.game_data["s_government_history"].append(tuple())
-        self.enact_policy_via_topdeck(_card)
-
-        self.parent.UpdateToComponent("post_policy", False)
-        await self.parent.Handle(None)
+    def get_next_president(self):
+        _pres = self.parent.game_data["s_president"]
 
     ##
-    # Currently no difference between this function and the one
-    # in legislative.default (other than name). Imo still good
-    # practice to keep them separate because combining them
-    # would create an odd dependency.
+    # Topdecks a card from the deck to the table. TD is guaranteed to 
+    # happen BEFORE the deck reshuffles (allowing for 100% winrate plays
+    # in a 3r1b deck, for example)
     #
-    def enact_policy_via_topdeck(self, policy_type):
-        _board = self.parent.board
-        if policy_type == 0: # TODO I dislike this.
-            _board.policiesPlayed["Liberal"] += 1
-            _board.lastPolicy = "Liberal"
-            
-        elif policy_type == 1:
-            _board.policiesPlayed["Fascist"] += 1
-            _board.lastPolicy = "Fascist"
-        
-        
+    async def top_deck(self):
+        ## 
+        # sets the tracker status to an empty third "reset" state.
+        # We're already in the tracker component right now, but when
+        # a policy gets enacted we're going to reflow from post-policy
+        # 
+        #  
+        self.parent.game_data["tracker_status"] = "reset"
+        _card = self.parent.deck.draw(1)
+        self.parent.deck.reshuffle_if_needed()
+        # 
+        # Appends a dummy government to the history. This is
+        # for the main purpose of evaluating term limits on the
+        # most recent government 
+        # 
+        self.parent.game_data["s_government_history"].append(tuple())
+
+        await self.parent.enact_policy(_card, was_topdecked=True, fire_event=True)

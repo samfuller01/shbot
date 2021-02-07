@@ -32,23 +32,19 @@ class SHGameComponentNominationDefault (SHGameComponent):
         elif context[0] == "reaction" and context[3] == "add":
             _event = context[1]
             _message = context[2]
-            for i in range(self.parent.size):
-                # TODO this is incredibly sloppy, f*** emojis
-                _expected_emoji_id = self.parent.request_emoji_id(i + 1)
+            _chan = self.parent.request_emoji_value(_event.emoji)
 
-                if _expected_emoji_id is not None and _expected_emoji_id == _event.emoji.id:
-                    if self.is_legal_pick(i + 1):
-                        _pres = self.parent.game_data["s_president"]
-                        _chan = i + 1
+            if _chan != None and self.is_legal_pick(_chan):
+                _pres = self.parent.game_data["s_president"]
 
-                        await self.parent.message_seat(_pres, content="You selected " + self.parent.s_seats[_chan]["name"]) #TODO
-                        self.parent.game_data["s_chancellor"] = _chan
-                        
-                        await self.parent.message_main(content="President " + self.parent.s_seats[_pres]["name"] + " has selected" + 
-                                                        " chancellor " + self.parent.s_seats[_chan]["name"] + ". Vote in player chats.")
-                        
-                        self.parent.UpdateToComponent("voting", False)
-                        return
+                await self.parent.message_seat(_pres, content="You selected " + self.parent.s_seats[_chan]["name"]) #TODO
+                self.parent.game_data["s_chancellor"] = _chan
+                
+                await self.parent.message_main(content="President " + self.parent.s_seats[_pres]["name"] + " has selected" + 
+                                                " chancellor " + self.parent.s_seats[_chan]["name"] + ". Vote in player chats.")
+                
+                self.parent.UpdateToComponent("voting", False)
+                return
             else:
                 await self.parent.message_seat(self.parent.game_data["s_president"], content="Illegal pick.")                
 

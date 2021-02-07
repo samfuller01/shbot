@@ -1,7 +1,7 @@
 from src.game.components.component_base import SHGameComponent
 from src.utils import message as msg
 
-class SHGameComponentPassedGovHitlerZone (SHGameComponent):
+class SHGameComponentPassed_govHitler_zone (SHGameComponent):
 
     async def __init__(self, parent, client):
         super( parent, client )

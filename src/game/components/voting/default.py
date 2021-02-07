@@ -37,17 +37,18 @@ class SHGameComponentVotingDefault (SHGameComponent):
             _event = context[1]
             _message = context[2]
             _channel = _message.channel
+            _vote = self.parent.request_emoji_value(_event.emoji)
             # TODO use the ID instead of the channel thanks rsar
             s_seat = [x.id for x in self.parent.privateChannels].index(_channel.id) + 1
             if 1 <= s_seat <= self.parent.size:
                 self.has_voted[s_seat - 1] = 1
                 # If they reacted with ja
-                if _event.emoji.id == self.parent.request_emoji_id("ja"):
+                if _vote == "ja":
                     # Update their current vote, and send a message.
                     self.vote_value[s_seat - 1] = 1
                     await self.parent.message_main(content="Player has voted.")
                     await self.parent.message_seat(s_seat, content="Vote **ja** registered.", delete_after=5)
-                elif _event.emoji.id == self.parent.request_emoji_id("nein"):
+                elif _vote == "nein":
                     # Update their current vote, and send a message.
                     self.vote_value[s_seat - 1] = 0
                     await self.parent.message_main(content="Player has voted.")
@@ -65,7 +66,8 @@ class SHGameComponentVotingDefault (SHGameComponent):
             0: [],
             1: []
         }
-        for i in range(self.parent.size):
+        #for i in range(self.parent.size):
+        for i in range(1):
             s_n  = i + 1
             if self.permitted_to_vote(s_n):
                 if self.has_voted[i]:

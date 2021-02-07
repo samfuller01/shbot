@@ -66,12 +66,14 @@ class SHBoard (aobject):
     #   modifies : self.parent.activeComponents
     #
     async def UpdateComponents(self):
-        print(self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]])
-        print(self.parent.activeComponents)
         for key in self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]]:
-            _name = self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy]][key]
-            d = {
-                key: await CreateComponentFromQualified(parent=self.parent, context=None, slot=key, name=_name)
-            }
-            self.parent.activeComponents.update(d)
-        print(self.parent.activeComponents)
+            try:
+                # off by one correction due to presets being stored as 0..n-1, 
+                _name = self.board_configs[self.lastPolicy][self.policiesPlayed[self.lastPolicy] - 1][key]
+                d = {
+                    key: await CreateComponentFromQualified(parent=self.parent, context=None, slot=key, name=_name)
+                }
+                self.parent.activeComponents.update(d)
+            except Exception as e:
+                print(e)
+                continue

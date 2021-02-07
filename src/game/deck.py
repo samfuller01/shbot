@@ -78,6 +78,12 @@ class SHDeck (object):
             self.deck = self.deck[n:]
             return _draw
     
+    def peek(self, n):
+        if n > len(self.deck):
+            print("something bad happened in deck")
+            return []
+        else:
+            return self.deck[0:n]
     #
     # Helper methods
     #
