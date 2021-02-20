@@ -6,8 +6,8 @@ import asyncio
 from threading import Thread
 
 from src.utils import message as msg
-from src.game.game_base import SHGame
-from src.minigames.trivia_game import TriviaGame
+from src.SH.sh_game import SHGame
+from src.trivia.trivia_game import TriviaGame
 
 f = open('config.json')
 config = json.load(f)
@@ -52,7 +52,7 @@ async def cleanup(guild):
         if channel.name.startswith("seat") or channel.name == "game-chat" or channel.name == "board-state":
             await channel.delete()
     for category in guild.categories:
-        if category.name.startswith("Secret Hitler") or category.name.startswith("Trivia"):
+        if category.name.startswith("Secret Hitler") or category.name.startswith("Trivia") or category.name.startswith("Game"):
             await category.delete()
 
 @client.event
@@ -84,6 +84,8 @@ async def on_message(message):
     directory = _m_array[0]
     command  = _m_array[1] if len(_m_array) > 1 else None
     args     = _m_array[2:] if len(_m_array) > 1 else None
+    flags    = build_flags(args)
+
 
     #
     #   Is this a special or global command?
@@ -122,7 +124,8 @@ async def on_message(message):
         #   If any of the args following the preset are not a valid player,
         #   then return and alert.
         #
-        _playerargs  = list(map(lambda x: re.sub(r'<@!?([0-9]+)>', r'\1', x), args[1:]))
+        _playerargs  = list(map(lambda x: re.sub(r'<@!?([0-9]+)>', r'\1', x), args[0:]))
+        print(_playerargs)
         _playerobjs  = []
         for p in _playerargs:
             try:
@@ -136,28 +139,35 @@ async def on_message(message):
         if None in _playerobjs:
             return
 
-        if (len(_playerobjs) < 5 or len(_playerobjs) > 10):
-            await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
-                           content="Your game must have between 5 and 10 players! No mode will support more or less players.")
-            return
-
-        for player in _playerobjs:
-            activePlayers.update( {player.id: True} )
+        
 
         #
         #   We are a) in a server and b) have all necessary conditions.
         #   Make a category and create a game in it.
         #
-        _newcategory = await message.guild.create_category("Secret Hitler")
+        _newcategory = await message.guild.create_category("Game")
         _pseudoUUID  = str(_newcategory.id)[:8]
         
         _desiredmode = args[0]
         _newgame = None
         if directory == "sh!":
-            _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
+            # TODO I want this check moved somewhere else probably
+            if (len(_playerobjs) < 5 or len(_playerobjs) > 10):
+                await msg.send(tag="error", location=__file__, channel=message.channel, msg_type="plain", delete_after=5,
+                            content="Your game must have between 5 and 10 players! No mode will support more or less players.")
+                return
+
+            for player in _playerobjs:
+                activePlayers.update( {player.id: True} )
+            
+            _newgame     = await SHGame(players=_playerobjs, client=client, category=_newcategory, flags=flags, context=message)
             await _newcategory.edit(name="Secret Hitler {uuid}".format(uuid=_pseudoUUID))
         elif directory == "trivia!":
-            _newgame     = await TriviaGame(players=_playerobjs, client=client, category=_newcategory, preset=_desiredmode, context=message)
+            # TODO trivia games maybe shouldn't really have an "active player" restriction?
+            for player in _playerobjs:
+                activePlayers.update( {player.id: True} )
+            
+            _newgame     = await TriviaGame(players=_playerobjs, client=client, category=_newcategory, flags=flags, context=message)
             await _newcategory.edit(name="Trivia {uuid}".format(uuid=_pseudoUUID))
         else:
             return
@@ -211,6 +221,24 @@ async def on_message(message):
         auxthread.start()
 
     client.loop.create_task(client.process_commands(message))
+
+def build_flags(args):
+    flags = {}
+    if args == None:
+        return {}
+    # find places where we have a flag
+    for i in range(len(args)):
+        if args[i].startswith("-"):
+            # read data until we reach the next flag
+            values = []
+            for j in range(i + 1, len(args)):
+                if args[j].startswith("-"):
+                    break
+                else:
+                    values.append(args[j])
+            flags[args[i]] = values
+    return flags
+
 
 
 @client.event
